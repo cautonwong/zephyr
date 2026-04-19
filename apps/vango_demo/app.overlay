@@ -1,18 +1,35 @@
-/ {
-    leds {
-        compatible = "gpio-leds";
-        led0: led_0 {
-            gpios = <&gpioa 0 GPIO_ACTIVE_HIGH>;
-            label = "User LED 0";
-        };
-    };
+/*
+ * Copyright (c) 2024 Vango Technologies
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
-    aliases {
-        led0 = &led0;
+/ {
+    chosen {
+        /* CPU0 (CM0) Professional choice: use standalone UART14 for console */
+        zephyr,console = &uart14;
+        zephyr,shell-uart = &uart14;
     };
 };
 
-&uart0 {
+/* Enable ADC0 for sampling demo */
+&adc0 {
+    status = "okay";
+};
+
+/* Enable standalone UART14 for CM0 Console */
+&uart14 {
     status = "okay";
     current-speed = <115200>;
+    pinctrl-0 = <&uart14_default>;
+    pinctrl-names = "default";
+};
+
+/* Custom Pinctrl for the Demo */
+&pinctrl {
+    uart14_default: uart14_default {
+        group1 {
+            pinmux = <VANGO_PINMUX(VANGO_PORT_C, 10, 1)>, /* UART14_TX on PC10 AF1 */
+                     <VANGO_PINMUX(VANGO_PORT_C, 11, 1)>; /* UART14_RX on PC11 AF1 */
+        };
+    };
 };

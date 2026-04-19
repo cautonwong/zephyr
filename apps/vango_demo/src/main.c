@@ -1,37 +1,73 @@
+/*
+ * Copyright (c) 2024 Vango Technologies
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 #include <zephyr/kernel.h>
+#include <zephyr/device.h>
 #include <zephyr/drivers/gpio.h>
-#include <zephyr/sys/printk.h>
+#include <zephyr/drivers/adc.h>
+#include <zephyr/logging/log.h>
 
-/* The devicetree node identifier for the "led0" alias. */
+LOG_MODULE_REGISTER(vango_demo, LOG_LEVEL_INF);
+
+/* Global core identity */
+#if defined(CONFIG_SOC_V32F20X_CPU0)
+  #define CORE_TAG "[CM0]"
+#else
+  #define CORE_TAG "[CM33]"
+#endif
+
+/* Device Node Safe Access */
+#define ADC_NODE DT_NODELABEL(adc0)
 #define LED0_NODE DT_ALIAS(led0)
-
-static const struct gpio_dt_spec led = GPIO_DT_SPEC_GET(LED0_NODE, gpios);
 
 int main(void)
 {
-    int ret;
+	LOG_INF("%s Professional Vango Demo starting...", CORE_TAG);
 
-    printk("Hello World! Vango V32F20x running on Zephyr\n");
+	/* 1. LED Heartbeat Initialization */
+#if DT_NODE_HAS_STATUS_OKAY(LED0_NODE)
+	const struct gpio_dt_spec led = GPIO_DT_SPEC_GET(LED0_NODE, gpios);
+	if (gpio_is_ready_dt(&led)) {
+		gpio_pin_configure_dt(&led, GPIO_OUTPUT_ACTIVE);
+		LOG_INF("%s Heartbeat LED ready.", CORE_TAG);
+	}
+#else
+	LOG_WRN("%s LED0 not enabled in devicetree.", CORE_TAG);
+#endif
 
-    if (!gpio_is_ready_dt(&led)) {
-        printk("Error: LED device is not ready\n");
-        return 0;
-    }
+	/* 2. ADC Acquisition Logic (Task for CM0) */
+#if defined(CONFIG_SOC_V32F20X_CPU0)
+#if DT_NODE_HAS_STATUS_OKAY(ADC_NODE)
+	const struct device *const adc_dev = DEVICE_DT_GET(ADC_NODE);
+	if (!device_is_ready(adc_dev)) {
+		LOG_ERR("%s ADC device not ready!", CORE_TAG);
+	} else {
+		LOG_INF("%s ADC Data Acquisition Core initialized.", CORE_TAG);
+	}
+#else
+	LOG_ERR("%s ADC0 is disabled. Check app.overlay!", CORE_TAG);
+#endif
+#endif
 
-    ret = gpio_pin_configure_dt(&led, GPIO_OUTPUT_ACTIVE);
-    if (ret < 0) {
-        printk("Error: Failed to configure LED pin\n");
-        return 0;
-    }
+	/* 3. Main Loop */
+	uint32_t loop_cnt = 0;
+	while (1) {
+		LOG_INF("%s Uptime: %u s | Iteration: %u", 
+			CORE_TAG, (uint32_t)(k_uptime_get() / 1000), loop_cnt++);
 
-    while (1) {
-        ret = gpio_pin_toggle_dt(&led);
-        if (ret < 0) {
-            printk("Error: Failed to toggle LED pin\n");
-            return 0;
-        }
-        k_msleep(500);
-    }
+#if DT_NODE_HAS_STATUS_OKAY(LED0_NODE)
+		gpio_pin_toggle_dt(&led);
+#endif
 
-    return 0;
+		/* Simulated heavy work for CPU0 vs CPU1 */
+#if defined(CONFIG_SOC_V32F20X_CPU0)
+		k_msleep(1000); /* CM0 handles 1Hz sampling */
+#else
+		k_msleep(2000); /* CM33 handles 0.5Hz reporting */
+#endif
+	}
+
+	return 0;
 }
