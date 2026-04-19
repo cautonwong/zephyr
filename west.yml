@@ -1,0 +1,29 @@
+# Copyright (c) 2024 Vango Technologies
+# SPDX-License-Identifier: Apache-2.0
+
+manifest:
+  self:
+    west-commands: scripts/west-commands.yml
+
+  remotes:
+    - name: zephyrproject-rtos
+      url-base: https://github.com/zephyrproject-rtos
+
+  projects:
+    - name: zephyr
+      remote: zephyrproject-rtos
+      revision: main
+      import:
+        name-allowlist:
+          - cmsis_6
+          - hal_nordic
+          - hal_stm32
+
+    # Local Modules (Path relative to workspace root /workspaces)
+    - name: v32f20x_hal
+      path: ../modules/hal/V32F20X_StdPeriph_Lib_V1.0.6
+      revision: master
+
+    - name: v32f20x_soc
+      path: ../modules/soc/v32f20x
+      revision: master
