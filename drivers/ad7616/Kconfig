@@ -1,0 +1,18 @@
+config AD7616
+    bool "Analog Devices AD7616 ADC driver"
+    depends on SPI
+    help
+        Enable driver for Analog Devices AD7616 16-bit, 16-channel DAS with dual simultaneous sampling ADC.
+
+config AD7616_OVERSAMPLING_RATIO
+    int "AD7616 Oversampling Ratio"
+    depends on AD7616
+    range 0 4
+    default 0
+    help
+        Sets the oversampling ratio for the AD7616 digital filter.
+        0: No oversampling
+        1: OSR=2
+        2: OSR=4
+        3: OSR=8
+        4: OSR=16

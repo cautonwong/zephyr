@@ -1,0 +1,37 @@
+description: Analog Devices AD7616 16-bit, 16-channel DAS (Professional Driver)
+
+compatible: "analog-devices,ad7616"
+
+include: [adc-controller.yaml, spi-device.yaml]
+
+properties:
+  reset-gpios:
+    type: phandle-array
+    required: true
+    description: RESET pin (Active Low)
+
+  convst-gpios:
+    type: phandle-array
+    description: CONVST pin (Manual trigger)
+
+  pwms:
+    type: phandle-array
+    description: PWM channel to drive CONVST for high-speed 1MSPS sampling.
+
+  busy-gpios:
+    type: phandle-array
+    required: true
+    description: BUSY pin (Falling edge interrupt)
+
+  "#io-channel-cells":
+    const: 1
+
+  adi,osr:
+    type: int
+    enum: [0, 2, 4, 8, 16, 32, 64, 128]
+    default: 0
+    description: Oversampling ratio
+
+  adi,sequencer-en:
+    type: boolean
+    description: Enable the internal hardware sequencer
