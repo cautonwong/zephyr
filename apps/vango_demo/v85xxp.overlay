@@ -1,0 +1,41 @@
+/*
+ * Copyright (c) 2026 Vango Technologies
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include <zephyr/dt-bindings/gpio/gpio.h>
+#include <zephyr/dt-bindings/pinctrl/vango-v85xxp-pinctrl.h>
+
+/ {
+	chosen {
+		zephyr,console = &uart0;
+		zephyr,shell-uart = &uart0;
+	};
+
+	leds {
+		compatible = "gpio-leds";
+		led0: led_0 {
+			gpios = <&gpiob 0 GPIO_ACTIVE_HIGH>;
+			label = "User LED0";
+		};
+	};
+};
+
+&uart0 {
+	status = "okay";
+	current-speed = <115200>;
+	pinctrl-0 = <&uart0_default>;
+	pinctrl-names = "default";
+};
+
+&gpiob {
+	status = "okay";
+};
+
+&pinctrl {
+	uart0_default: uart0_default {
+		group1 {
+			pinmux = <V85XXP_PIN_UART0_TX>, <V85XXP_PIN_UART0_RX>;
+		};
+	};
+};
