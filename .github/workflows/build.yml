@@ -43,6 +43,7 @@ jobs:
           if [ "${{ runner.os }}" = "Windows" ]; then
             EXTRA_TWISTER_FLAGS="--short-build-path -O/tmp/twister-out"
           fi
+          export ZEPHYR_MODULES="${GITHUB_WORKSPACE}/example-application/modules/hal/V32F20X_StdPeriph_Lib_V1.0.6;${GITHUB_WORKSPACE}/example-application/modules/soc/v32f20x;${GITHUB_WORKSPACE}/example-application/modules/hal/V85XXP_Lib_V2.5;${GITHUB_WORKSPACE}/example-application/modules/soc/v85xxp;${GITHUB_WORKSPACE}/example-application/zephyrproject/modules/hal/cmsis_6"
           west twister -T app -v --inline-logs --integration $EXTRA_TWISTER_FLAGS
 
       - name: Twister Tests
@@ -52,4 +53,5 @@ jobs:
           if [ "${{ runner.os }}" = "Windows" ]; then
             EXTRA_TWISTER_FLAGS="--short-build-path -O/tmp/twister-out"
           fi
+          export ZEPHYR_MODULES="${GITHUB_WORKSPACE}/example-application/modules/hal/V32F20X_StdPeriph_Lib_V1.0.6;${GITHUB_WORKSPACE}/example-application/modules/soc/v32f20x;${GITHUB_WORKSPACE}/example-application/modules/hal/V85XXP_Lib_V2.5;${GITHUB_WORKSPACE}/example-application/modules/soc/v85xxp;${GITHUB_WORKSPACE}/example-application/zephyrproject/modules/hal/cmsis_6"
           west twister -T tests -v --inline-logs --integration $EXTRA_TWISTER_FLAGS
