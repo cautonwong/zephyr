@@ -48,7 +48,11 @@ export ZEPHYR_MODULES="${HAL_MODULE};/workspaces/modules/soc/${SOC_TYPE};/worksp
 
 # 3. Path Normalization
 BOARD_SLUG=$(echo $BOARD | tr '/' '_')
-BUILD_DIR="${PROJECT_ROOT}/build/${APP_NAME}/${BOARD_SLUG}"
+
+# [PERFORMANCE FIX] Option C: Redirect build directory to container's native filesystem.
+# Windows mounted directories (/workspaces) have severe I/O performance penalties for 
+# large numbers of small files (like .obj files). Building in /tmp is ~10x faster.
+BUILD_DIR="/tmp/vango_build/${APP_NAME}/${BOARD_SLUG}"
 APP_PATH="${PROJECT_ROOT}/apps/${APP_NAME}"
 
 # 4. Multi-level Overlay Logic (Board-Specific -> SoC-Specific)
