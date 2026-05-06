@@ -6,6 +6,14 @@ export ZEPHYR_SDK_INSTALL_DIR=/opt/zephyr-sdk-1.0.1
 export ZEPHYR_BASE=/workspaces/rtos/zephyr/zephyr
 export ZEPHYR_TOOLCHAIN_VARIANT=zephyr
 
+# [PERFORMANCE FIX] Boost ccache hit rate and performance
+# Redirecting cache to container's native filesystem and allowing some sloppiness 
+# for time-macros which are common in firmware.
+export CCACHE_DIR=/root/.cache/ccache
+export CCACHE_COMPRESS=1
+export CCACHE_SLOPPINESS=include_file_mtime,time_macros
+export CCACHE_BASEDIR=$PWD
+
 # Activate Python Virtual Environment
 source /workspaces/edgeos/EdgeC/.venv/bin/activate
 
@@ -78,12 +86,16 @@ case $COMMAND in
         [[ "$COMMAND" == "debug" ]] && BUILD_TYPE="Debug"
         [[ "$COMMAND" == "release" ]] && BUILD_TYPE="Release"
 
+        # [PERFORMANCE FIX] Explicitly enable ccache in CMake and optimize Ninja parallel jobs
+        CPUS=$(nproc)
         cmake -GNinja -B"$BUILD_DIR" -S"$APP_PATH" \
               -DBOARD="$BOARD" \
               -DCMAKE_BUILD_TYPE="$BUILD_TYPE" \
+              -DZEPHYR_CCACHE=ON \
               $OVERLAY_ARG
         
-        ninja -C "$BUILD_DIR"
+        # Use all available cores for compilation
+        ninja -C "$BUILD_DIR" -j $CPUS
         ;;
     clean)
         echo "--> [CLEAN] $BUILD_DIR"

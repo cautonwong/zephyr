@@ -1,8 +1,13 @@
 tests:
   vango_v32f20x_demo.basic:
-    tags: vango uart gpio
-    platform_allow: v32f20x_board
+    tags:
+      - vango
+      - uart
+      - gpio
+    platform_allow:
+      - v32f20x_board
     harness: console
     harness_config:
       type: one_line
-      regex: "Hello, V32F20X!"
+      regex:
+        - "Hello, V32F20X!"
