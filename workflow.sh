@@ -26,6 +26,11 @@ BOARD=$3
 usage() {
     echo "Usage: $0 <command> <app> [board]"
     echo ""
+    echo "Boards:"
+    echo "  v32f20x_board/v32f20x/cpu0   V32F20X Cortex-M0  (default)"
+    echo "  v32f20x_board/v32f20x/cpu1   V32F20X Cortex-M33"
+    echo "  v85xxp_board/v85xxp          V85XXP Cortex-M0"
+    echo ""
     echo "Example: ./workflow.sh build vango_demo v32f20x_board/v32f20x/cpu0"
     exit 1
 }
