@@ -1,0 +1,10 @@
+&adc0 {
+	status = "okay";
+};
+
+/ {
+	aliases {
+		app-adc = &adc0;
+		app-uart = &uart14;
+	};
+};

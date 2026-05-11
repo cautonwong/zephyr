@@ -1,0 +1,35 @@
+# Vango Demo Application Configuration
+
+# 1. Essential: Source Zephyr's main Kconfig to inherit all system symbols (ADC, GPIO, etc.)
+mainmenu "Vango Target-Centric Demo"
+
+source "Kconfig.zephyr"
+
+# 2. Application-specific Capabilities
+menu "Vango Demo Capabilities"
+
+config APP_FEATURE_METERING
+	bool "Enable Metering Service"
+	default n
+	help
+	  Enable high-frequency energy sampling using ADC/EADC.
+
+config APP_FEATURE_COMMS
+	bool "Enable Communication Gateway Service"
+	default n
+	help
+	  Enable communication stacks (Ethernet, USB, Flexcomm) and gateway logic.
+
+config APP_FEATURE_SECURITY
+	bool "Enable Security & Crypto Service"
+	default n
+	help
+	  Enable hardware encryption (AES/SHA) engine demonstrations.
+
+config APP_FEATURE_LOW_POWER
+	bool "Enable Low Power Monitor Service"
+	default n
+	help
+	  Enable UART32K and PMU sleep state management (V85XXP focus).
+
+endmenu
