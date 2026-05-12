@@ -1,0 +1,18 @@
+# FlashDB Kconfig
+
+menuconfig FLASHDB
+    bool "FlashDB Support"
+    select FLASH
+    select FLASH_MAP
+    help
+      Enable FlashDB open-source library.
+
+if FLASHDB
+
+config FLASHDB_WRITE_GRAN
+    int "Flash write granularity (bits)"
+    default 32
+    help
+      The write granularity of the flash. For V32F20X, it is 32 bits (4 bytes).
+
+endif

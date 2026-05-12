@@ -9,7 +9,15 @@ FAST_SPACE="/root/fast_space"
 
 echo "--> Syncing applications to fast storage..."
 mkdir -p "${FAST_SPACE}/applications"
-rsync -a --delete "${WORKSPACE_ROOT}/applications/apps" "${FAST_SPACE}/applications/"
+# Sync critical directories for Zephyr build
+for dir in apps boards drivers dts include lib zephyr; do
+    if [ -d "${WORKSPACE_ROOT}/applications/$dir" ]; then
+        rsync -a --delete "${WORKSPACE_ROOT}/applications/$dir" "${FAST_SPACE}/applications/"
+    fi
+done
+# Sync top-level configuration files
+cp "${WORKSPACE_ROOT}/applications/Kconfig" "${FAST_SPACE}/applications/" || true
+cp "${WORKSPACE_ROOT}/applications/CMakeLists.txt" "${FAST_SPACE}/applications/" || true
 
 export ZEPHYR_SDK_INSTALL_DIR=/opt/zephyr-sdk-1.0.1
 export ZEPHYR_BASE="${FAST_SPACE}/rtos/zephyr/zephyr"
@@ -39,7 +47,8 @@ fi
 
 SOC_MODULE="${FAST_SPACE}/modules/soc/${SOC_TYPE}"
 CMSIS_MODULE="${FAST_SPACE}/rtos/zephyr/modules/hal/cmsis_6"
-export ZEPHYR_MODULES="${HAL_MODULE};${SOC_MODULE};${CMSIS_MODULE}"
+APP_MODULE="${FAST_SPACE}/applications"
+export ZEPHYR_MODULES="${HAL_MODULE};${SOC_MODULE};${CMSIS_MODULE};${APP_MODULE}"
 
 mkdir -p "$BUILD_DIR"
 CPUS=$(nproc)

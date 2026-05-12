@@ -5,7 +5,73 @@
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 
+#ifdef CONFIG_FLASHDB
+#include <flashdb.h>
+extern fdb_time_t fdb_get_time_impl(void);
+#endif
+
 LOG_MODULE_REGISTER(app_main, LOG_LEVEL_INF);
+
+#ifdef CONFIG_FLASHDB
+static struct fdb_kvdb kvdb1;
+static struct fdb_tsdb tsdb1;
+
+static struct fdb_default_kv_node default_kv_table[] = {
+    {"boot_count", "0", sizeof("0") - 1},
+};
+
+static bool tsdb_cb(fdb_tsl_t tsl, void *arg)
+{
+    struct fdb_blob blob;
+    int temp = 0;
+    
+    fdb_blob_read((fdb_db_t)&tsdb1, fdb_tsl_to_blob(tsl, fdb_blob_make(&blob, &temp, sizeof(temp))));
+    LOG_INF("[TSDB] time: %d, temp: %d", tsl->time, temp);
+    return false;
+}
+
+void fdb_test(void)
+{
+    fdb_err_t result;
+    struct fdb_blob blob;
+    uint32_t boot_count = 0;
+    struct fdb_default_kv default_kv;
+
+    default_kv.kvs = default_kv_table;
+    default_kv.num = sizeof(default_kv_table) / sizeof(default_kv_table[0]);
+
+    /* Initialize KVDB */
+    result = fdb_kvdb_init(&kvdb1, "kvdb1", "fdb_kvdb1", &default_kv, NULL);
+    if (result != FDB_NO_ERR) {
+        LOG_ERR("KVDB init failed: %d", result);
+        return;
+    }
+
+    /* Get boot_count */
+    fdb_kv_get_blob(&kvdb1, "boot_count", fdb_blob_make(&blob, &boot_count, sizeof(boot_count)));
+    boot_count++;
+    LOG_INF("Boot count: %u", boot_count);
+
+    /* Save boot_count */
+    fdb_kv_set_blob(&kvdb1, "boot_count", fdb_blob_make(&blob, &boot_count, sizeof(boot_count)));
+
+    /* Initialize TSDB */
+    result = fdb_tsdb_init(&tsdb1, "tsdb1", "fdb_tsdb1", fdb_get_time_impl, 128, NULL);
+    if (result != FDB_NO_ERR) {
+        LOG_ERR("TSDB init failed: %d", result);
+        return;
+    }
+
+    /* Append log to TSDB */
+    int current_temp = 25 + (boot_count % 10);
+    fdb_tsl_append(&tsdb1, fdb_blob_make(&blob, &current_temp, sizeof(current_temp)));
+    LOG_INF("Appended temperature: %d to TSDB", current_temp);
+
+    /* Iterate over TSDB logs */
+    LOG_INF("Iterating over TSDB:");
+    fdb_tsl_iter(&tsdb1, tsdb_cb, NULL);
+}
+#endif
 
 int main(void)
 {
@@ -13,6 +79,10 @@ int main(void)
 	LOG_INF("  Vango Target-Centric App Orchestrator");
 	LOG_INF("  Build: %s %s", __DATE__, __TIME__);
 	LOG_INF("============================================");
+
+#ifdef CONFIG_FLASHDB
+    fdb_test();
+#endif
 
 #if defined(CONFIG_APP_FEATURE_METERING)
     LOG_INF("--> [ENABLED] Metering Capability");
