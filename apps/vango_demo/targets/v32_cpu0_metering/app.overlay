@@ -2,6 +2,11 @@
         status = "okay";
 };
 
+&uart14 {
+        status = "okay";
+        current-speed = <115200>;
+};
+
 &flash0 {
         partitions {
                 compatible = "fixed-partitions";
@@ -33,5 +38,8 @@
                 app-adc = &adc0;
                 app-uart = &uart14;
         };
-};
 
+        chosen {
+                zephyr,ipc_shm = &ipc_shm;
+        };
+};

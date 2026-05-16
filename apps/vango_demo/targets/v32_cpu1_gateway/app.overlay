@@ -1,5 +1,45 @@
+&adc0 {
+        status = "okay";
+};
+
+&uart14 {
+        status = "okay";
+        current-speed = <115200>;
+};
+
+&flash0 {
+        partitions {
+                compatible = "fixed-partitions";
+                #address-cells = <1>;
+                #size-cells = <1>;
+
+                /* Reserve 1MB for code */
+                code_partition: partition@0 {
+                        label = "code_partition";
+                        reg = <0x00000000 DT_SIZE_M(1)>;
+                };
+
+                /* 128KB for FlashDB KVDB */
+                fdb_kvdb1: partition@100000 {
+                        label = "fdb_kvdb1";
+                        reg = <0x00100000 DT_SIZE_K(128)>;
+                };
+
+                /* 256KB for FlashDB TSDB */
+                fdb_tsdb1: partition@120000 {
+                        label = "fdb_tsdb1";
+                        reg = <0x00120000 DT_SIZE_K(256)>;
+                };
+        };
+};
+
 / {
-	aliases {
-		app-uart = &uart0;
-	};
+        aliases {
+                app-adc = &adc0;
+                app-uart = &uart14;
+        };
+
+        chosen {
+                zephyr,ipc_shm = &ipc_shm;
+        };
 };
