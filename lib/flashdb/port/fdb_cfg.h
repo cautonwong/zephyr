@@ -18,6 +18,18 @@
 #define FDB_WRITE_GRAN 32
 #endif
 
+/* Total number of sector store status. Vango Flash has 1024 bytes per page. */
+#ifdef FDB_SECTOR_STORE_STATUS_NUM
+#undef FDB_SECTOR_STORE_STATUS_NUM
+#endif
+#define FDB_SECTOR_STORE_STATUS_NUM 10
+
+/* Total number of sector dirty status. */
+#ifdef FDB_SECTOR_DIRTY_STATUS_NUM
+#undef FDB_SECTOR_DIRTY_STATUS_NUM
+#endif
+#define FDB_SECTOR_DIRTY_STATUS_NUM 5
+
 /* Use KVDB and TSDB */
 #define FDB_USING_KVDB
 #define FDB_USING_TSDB

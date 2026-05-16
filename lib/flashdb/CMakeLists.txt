@@ -11,4 +11,5 @@ zephyr_library_sources(
     src/src/fdb_tsdb.c
     src/src/fdb_utils.c
     port/fdb_port.c
+    fdb_shell.c
 )

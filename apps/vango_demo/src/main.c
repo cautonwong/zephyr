@@ -13,14 +13,14 @@ extern fdb_time_t fdb_get_time_impl(void);
 LOG_MODULE_REGISTER(app_main, LOG_LEVEL_INF);
 
 #ifdef CONFIG_FLASHDB
-static struct fdb_kvdb kvdb1;
-static struct fdb_tsdb tsdb1;
-
+struct fdb_kvdb kvdb1;
+struct fdb_tsdb tsdb1;
+#endif
 static struct fdb_default_kv_node default_kv_table[] = {
     {"boot_count", "0", sizeof("0") - 1},
 };
 
-static bool tsdb_cb(fdb_tsl_t tsl, void *arg)
+static bool ts_list_cb(fdb_tsl_t tsl, void *arg)
 {
     struct fdb_blob blob;
     int temp = 0;
@@ -30,6 +30,7 @@ static bool tsdb_cb(fdb_tsl_t tsl, void *arg)
     return false;
 }
 
+#ifdef CONFIG_FLASHDB
 void fdb_test(void)
 {
     fdb_err_t result;
@@ -69,7 +70,7 @@ void fdb_test(void)
 
     /* Iterate over TSDB logs */
     LOG_INF("Iterating over TSDB:");
-    fdb_tsl_iter(&tsdb1, tsdb_cb, NULL);
+    fdb_tsl_iter(&tsdb1, ts_list_cb, NULL);
 }
 #endif
 
