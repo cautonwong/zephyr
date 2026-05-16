@@ -1,0 +1,21 @@
+# Twister Hardware Map Example
+# -----------------------------
+# 1. Copy this file to 'hardware_map.yaml'
+# 2. Modify 'serial' to match your local UART port
+# 3. Run: ./zephyr/scripts/twister -T tests/flashdb --device-testing --hardware-map hardware_map.yaml -p v32f20x_board/v32f20x/cpu0
+
+- platform: v32f20x_board/v32f20x/cpu0
+  id: vango_v32_01
+  serial: /dev/ttyUSB0
+  baud: 115200
+  runner: pyocd
+  fixtures:
+    - flash_storage
+
+- platform: v32f20x_board/v32f20x/cpu1
+  id: vango_v32_02
+  serial: /dev/ttyUSB1
+  baud: 115200
+  runner: pyocd
+  fixtures:
+    - multi_core

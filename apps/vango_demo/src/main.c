@@ -74,6 +74,15 @@ void fdb_test(void)
 }
 #endif
 
+#ifdef CONFIG_COREDUMP
+void crash_test(void)
+{
+    LOG_ERR("!!! Intentional Crash for Coredump Demo !!!");
+    volatile int *ptr = NULL;
+    *ptr = 0xDEADBEEF;
+}
+#endif
+
 int main(void)
 {
 	LOG_INF("============================================");

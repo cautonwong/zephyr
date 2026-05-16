@@ -110,6 +110,15 @@ static int cmd_ts_clear(const struct shell *sh, size_t argc, char **argv)
     return 0;
 }
 
+#ifdef CONFIG_COREDUMP
+extern void crash_test(void);
+static int cmd_crash(const struct shell *sh, size_t argc, char **argv)
+{
+    crash_test();
+    return 0;
+}
+#endif
+
 /* --- Shell Registration --- */
 SHELL_STATIC_SUBCMD_SET_CREATE(sub_fdb_kv,
     SHELL_CMD_ARG(get,  NULL, "Get KV value: kv get <key> [-x]", cmd_kv_get, 2, 1),
@@ -129,6 +138,9 @@ SHELL_STATIC_SUBCMD_SET_CREATE(sub_fdb,
     SHELL_CMD(status,   NULL, "Show FlashDB status", cmd_fdb_status),
     SHELL_CMD(kv,       &sub_fdb_kv, "KVDB commands", NULL),
     SHELL_CMD(ts,       &sub_fdb_ts, "TSDB commands", NULL),
+#ifdef CONFIG_COREDUMP
+    SHELL_CMD(crash,    NULL, "Trigger intentional crash", cmd_crash),
+#endif
     SHELL_SUBCMD_SET_END
 );
 
