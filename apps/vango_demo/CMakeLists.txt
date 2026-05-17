@@ -25,6 +25,7 @@ target_sources(app PRIVATE
 target_sources_ifdef(CONFIG_APP_FEATURE_METERING  app PRIVATE src/services/metering.c)
 target_sources_ifdef(CONFIG_APP_FEATURE_COMMS     app PRIVATE src/services/comms.c)
 target_sources_ifdef(CONFIG_MODBUS                app PRIVATE src/services/modbus_service.c)
+target_sources_ifdef(CONFIG_NETWORKING            app PRIVATE src/services/network_service.c)
 target_sources_ifdef(CONFIG_APP_FEATURE_SECURITY  app PRIVATE src/services/security.c)
 target_sources_ifdef(CONFIG_APP_FEATURE_LOW_POWER app PRIVATE src/services/low_power.c)
 

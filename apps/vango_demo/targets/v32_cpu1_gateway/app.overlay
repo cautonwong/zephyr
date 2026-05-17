@@ -1,6 +1,21 @@
-&uart14 {
+&gpioa { status = "okay"; };
+&gpiob { status = "okay"; };
+
+&uart0 {
+    status = "okay";
+    current-speed = <115200>;
+    
+    modem0: modem0 {
+        compatible = "quectel,bg9x";
+        mdm-power-gpios = <&gpiob 8 GPIO_ACTIVE_HIGH>;
+        mdm-reset-gpios = <&gpiob 7 GPIO_ACTIVE_HIGH>;
         status = "okay";
-        current-speed = <115200>;
+    };
+};
+
+&uart14 {
+    status = "okay";
+    current-speed = <115200>;
 };
 
 &flash0 {
@@ -29,9 +44,10 @@
 / {
     aliases {
         app-uart = &uart14;
+        app-modbus = &modbus0;
+        app-modem = &modem0;
     };
 
-    /* Define Modbus Serial Node properly */
     modbus0: modbus0 {
         compatible = "vango,v32f20x-modbus";
         status = "okay";
