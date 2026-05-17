@@ -14,7 +14,7 @@ static struct k_mutex fdb_lock_obj;
 static bool fdb_lock_init = false;
 
 /* FAL bridge implementation */
-static struct fal_partition zephyr_parts[8];
+static struct fal_partition zephyr_parts[4];
 static int zephyr_part_count = 0;
 static struct fal_flash_dev zephyr_flash_dev = {
     .name = "vango_flash",
@@ -34,19 +34,13 @@ const struct fal_partition *fal_partition_find(const char *name)
         }
     }
 
-    if (zephyr_part_count >= 8) return NULL;
+    if (zephyr_part_count >= 4) return NULL;
 
     const struct flash_area *fa;
     int rc = -1;
 
-    /* Manual mapping because Zephyr macros don't support runtime strings */
-    if (strcmp(name, "fdb_kvdb1") == 0) {
-        rc = flash_area_open(DT_FIXED_PARTITION_ID(DT_NODE_BY_FIXED_PARTITION_LABEL(fdb_kvdb1)), &fa);
-    } else if (strcmp(name, "fdb_tsdb1") == 0) {
-        rc = flash_area_open(DT_FIXED_PARTITION_ID(DT_NODE_BY_FIXED_PARTITION_LABEL(fdb_tsdb1)), &fa);
-    } else if (strcmp(name, "code_partition") == 0) {
-        rc = flash_area_open(DT_FIXED_PARTITION_ID(DT_NODE_BY_FIXED_PARTITION_LABEL(code_partition)), &fa);
-    }
+    /* Use unified 'storage' partition for all FlashDB operations in production layout */
+    rc = flash_area_open(DT_FIXED_PARTITION_ID(DT_NODELABEL(storage_partition)), &fa);
 
     if (rc == 0) {
         strncpy(zephyr_parts[zephyr_part_count].name, name, 15);
@@ -90,7 +84,7 @@ void fdb_unlock(fdb_db_t db)
     k_mutex_unlock(&fdb_lock_obj);
 }
 
-/* FlashDB uses a function pointer in fdb_tsdb, but for KVDB it might be different */
+/* FlashDB uses a function pointer in fdb_tsdb */
 fdb_time_t fdb_get_time_impl(void)
 {
     return (fdb_time_t)k_uptime_get() / 1000;

@@ -42,7 +42,7 @@ void fdb_test(void)
     default_kv.num = sizeof(default_kv_table) / sizeof(default_kv_table[0]);
 
     /* Initialize KVDB */
-    result = fdb_kvdb_init(&kvdb1, "kvdb1", "fdb_kvdb1", &default_kv, NULL);
+    result = fdb_kvdb_init(&kvdb1, "kvdb1", "storage", &default_kv, NULL);
     if (result != FDB_NO_ERR) {
         LOG_ERR("KVDB init failed: %d", result);
         return;
@@ -57,7 +57,7 @@ void fdb_test(void)
     fdb_kv_set_blob(&kvdb1, "boot_count", fdb_blob_make(&blob, &boot_count, sizeof(boot_count)));
 
     /* Initialize TSDB */
-    result = fdb_tsdb_init(&tsdb1, "tsdb1", "fdb_tsdb1", fdb_get_time_impl, 128, NULL);
+    result = fdb_tsdb_init(&tsdb1, "tsdb1", "storage", fdb_get_time_impl, 128, NULL);
     if (result != FDB_NO_ERR) {
         LOG_ERR("TSDB init failed: %d", result);
         return;
