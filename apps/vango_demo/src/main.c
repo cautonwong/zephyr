@@ -83,17 +83,29 @@ void crash_test(void)
 }
 #endif
 
+extern int ipc_service_init(void);
+#if defined(CONFIG_SOC_V32F20X_CPU0)
+#include <protocol.h>
+extern int ipc_send_metering(struct metering_data *data);
+#endif
+
 int main(void)
 {
-	LOG_INF("============================================");
-	LOG_INF("  Vango Target-Centric App Orchestrator");
-	LOG_INF("  Build: %s %s", __DATE__, __TIME__);
-	LOG_INF("============================================");
+        LOG_INF("============================================");
+        LOG_INF("  Vango Target-Centric App Orchestrator");
+        LOG_INF("  Build: %s %s", __DATE__, __TIME__);
+        LOG_INF("============================================");
+
+    /* Initialize IPC Infrastructure */
+    ipc_service_init();
 
 #ifdef CONFIG_FLASHDB
     fdb_test();
 #endif
 
+#if defined(CONFIG_SOC_V32F20X_CPU0)
+    struct metering_data md = {0};
+#endif
 #if defined(CONFIG_APP_FEATURE_METERING)
     LOG_INF("--> [ENABLED] Metering Capability");
 #endif
@@ -111,8 +123,14 @@ int main(void)
 #endif
 
 	while (1) {
-		k_msleep(10000);
+	#if defined(CONFIG_SOC_V32F20X_CPU0)
+	        /* Simulate production metering data pulse */
+	        md.active_energy += 10;
+	        md.reactive_energy += 5;
+	        md.timestamp = k_uptime_get_32();
+	        ipc_send_metering(&md);
+	#endif
+	        k_msleep(10000);
 	}
-
 	return 0;
 }

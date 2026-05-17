@@ -15,12 +15,16 @@ find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 project(vango_demo)
 
 # 2. Main Orchestrator
-target_sources(app PRIVATE src/main.c)
+target_sources(app PRIVATE 
+    src/main.c
+    src/services/ipc_service.c
+)
 
 # 3. Capability-based Service Inclusion
 # Sources are linked only if the corresponding Kconfig is enabled in prj.conf
 target_sources_ifdef(CONFIG_APP_FEATURE_METERING  app PRIVATE src/services/metering.c)
 target_sources_ifdef(CONFIG_APP_FEATURE_COMMS     app PRIVATE src/services/comms.c)
+target_sources_ifdef(CONFIG_MODBUS                app PRIVATE src/services/modbus_service.c)
 target_sources_ifdef(CONFIG_APP_FEATURE_SECURITY  app PRIVATE src/services/security.c)
 target_sources_ifdef(CONFIG_APP_FEATURE_LOW_POWER app PRIVATE src/services/low_power.c)
 
