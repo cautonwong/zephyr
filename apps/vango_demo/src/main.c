@@ -84,6 +84,7 @@ void crash_test(void)
 #endif
 
 extern int ipc_service_init(void);
+extern int power_monitor_init(void);
 #if defined(CONFIG_SOC_V32F20X_CPU0)
 #include <protocol.h>
 extern int ipc_send_metering(struct metering_data *data);
@@ -98,6 +99,7 @@ int main(void)
 
     /* Initialize IPC Infrastructure */
     ipc_service_init();
+    power_monitor_init();
 
 #ifdef CONFIG_FLASHDB
     fdb_test();

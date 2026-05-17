@@ -18,6 +18,7 @@ project(vango_demo)
 target_sources(app PRIVATE 
     src/main.c
     src/services/ipc_service.c
+    src/services/power_monitor.c
 )
 
 # 3. Capability-based Service Inclusion
