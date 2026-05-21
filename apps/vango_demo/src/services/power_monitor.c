@@ -66,7 +66,9 @@ static void power_fail_worker(struct k_work *item)
     LOG_WRN("-> Entering STANDBY mode...");
     k_sched_unlock(); /* Must unlock before forcing PM state */
     
+#if defined(CONFIG_PM_DEVICE)
     pm_state_force(0, &(struct pm_state_info){PM_STATE_SOFT_OFF, 0, 0});
+#endif
     
     /* Should never reach here if STANDBY is successful */
     while (1) {
@@ -84,6 +86,7 @@ int power_monitor_init(void)
     k_work_init(&power_fail_work, power_fail_worker);
 
     /* 3. Register the Analog Comparator ISR */
+#if DT_HAS_COMPAT_STATUS_OKAY(vango_v32f20x_ana_cmp)
     const struct device *cmp = DEVICE_DT_GET_ANY(vango_v32f20x_ana_cmp);
     if (cmp == NULL || !device_is_ready(cmp)) {
         LOG_WRN("Comparator not available for power monitoring on this core");
@@ -92,7 +95,9 @@ int power_monitor_init(void)
 
     ana_cmp_v32f20x_set_callback(cmp, power_fail_isr_callback);
     LOG_INF("Power monitoring active (Analog Comparator)");
-    
+#else
+    LOG_WRN("Power monitoring hardware not found (Simulated/Mock environment)");
+#endif
     return 0;
 }
 

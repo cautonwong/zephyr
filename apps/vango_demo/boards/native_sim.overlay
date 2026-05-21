@@ -1,0 +1,23 @@
+/ {
+	aliases {
+		/* 将业务代码中的 ADC 宏重定向到 Zephyr 的官方 ADC 模拟器 */
+		app-adc = &adc_emul;
+		/* 将业务代码中的 UART 重定向到 Linux 模拟器的第二个串口 (Pseudoterminal) */
+		app-uart = &uart1;
+	};
+
+	/* 实例化一个纯软件的 ADC 模拟外设 */
+	adc_emul: adc_emul {
+		compatible = "zephyr,adc-emul";
+		nchannels = <4>;
+		ref-internal-mv = <3300>;
+		#io-channel-cells = <1>;
+		status = "okay";
+	};
+};
+
+/* 激活 Linux 原生的 UART1 */
+&uart1 {
+	status = "okay";
+	current-speed = <115200>;
+};

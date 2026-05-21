@@ -40,6 +40,7 @@ static struct ipc_ept_cfg ept_cfg = {
 
 int ipc_service_init(void)
 {
+#if DT_NODE_EXISTS(DT_NODELABEL(ipc0))
     int ret;
 
     ipc_instance = DEVICE_DT_GET(DT_NODELABEL(ipc0));
@@ -53,7 +54,9 @@ int ipc_service_init(void)
         LOG_ERR("Failed to register endpoint: %d", ret);
         return ret;
     }
-
+#else
+    LOG_WRN("IPC hardware not found (Simulated/Mock environment)");
+#endif
     return 0;
 }
 

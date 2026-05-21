@@ -15,7 +15,7 @@ LOG_MODULE_REGISTER(app_main, LOG_LEVEL_INF);
 #ifdef CONFIG_FLASHDB
 struct fdb_kvdb kvdb1;
 struct fdb_tsdb tsdb1;
-#endif
+
 static struct fdb_default_kv_node default_kv_table[] = {
     {"boot_count", "0", sizeof("0") - 1},
 };
@@ -29,6 +29,7 @@ static bool ts_list_cb(fdb_tsl_t tsl, void *arg)
     LOG_INF("[TSDB] time: %d, temp: %d", tsl->time, temp);
     return false;
 }
+#endif
 
 #ifdef CONFIG_FLASHDB
 void fdb_test(void)
