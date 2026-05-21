@@ -3,3 +3,6 @@ name: applications
 build:
   cmake: .
   kconfig: Kconfig
+  dts:
+    bindings:
+      - dts/bindings

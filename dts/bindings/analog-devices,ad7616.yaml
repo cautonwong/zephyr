@@ -1,4 +1,7 @@
-description: Analog Devices AD7616 16-bit, 16-channel DAS (Professional Driver)
+description: |
+  Analog Devices AD7616 16-bit, 16-channel, Dual Simultaneous Sampling DAS.
+  This driver operates over SPI and utilizes hardware BUSY interrupts for DMA-driven
+  asynchronous data acquisition, enabling true 1 MSPS throughput.
 
 compatible: "analog-devices,ad7616"
 
@@ -8,20 +11,27 @@ properties:
   reset-gpios:
     type: phandle-array
     required: true
-    description: RESET pin (Active Low)
+    description: |
+      RESET pin (Active Low). Used to hard-reset the ADC during initialization.
 
   convst-gpios:
     type: phandle-array
-    description: CONVST pin (Manual trigger)
+    description: |
+      CONVST (Conversion Start) pin. Used for manual software-triggered 
+      conversions. Provide this if 'pwms' is not used.
 
   pwms:
     type: phandle-array
-    description: PWM channel to drive CONVST for high-speed 1MSPS sampling.
+    description: |
+      PWM channel to drive the CONVST pin for hardware-triggered,
+      jitter-free high-speed sampling (up to 1 MSPS).
 
   busy-gpios:
     type: phandle-array
     required: true
-    description: BUSY pin (Falling edge interrupt)
+    description: |
+      BUSY pin (Active High, triggers on falling edge). Indicates that 
+      conversion is complete and data is ready to be fetched via SPI DMA.
 
   "#io-channel-cells":
     const: 1
@@ -30,8 +40,12 @@ properties:
     type: int
     enum: [0, 2, 4, 8, 16, 32, 64, 128]
     default: 0
-    description: Oversampling ratio
+    description: |
+      Oversampling ratio. The hardware applies a digital low-pass filter
+      to achieve higher SNR at the cost of bandwidth.
 
   adi,sequencer-en:
     type: boolean
-    description: Enable the internal hardware sequencer
+    description: |
+      Enable the internal hardware sequencer. When true, allows the ADC
+      to automatically cycle through a pre-programmed stack of channels.
