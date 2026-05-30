@@ -32,4 +32,10 @@ config APP_FEATURE_LOW_POWER
 	help
 	  Enable UART32K and PMU sleep state management (V85XXP focus).
 
+config APP_FEATURE_OTA
+	bool "Enable MCUboot OTA Readiness Service"
+	default n
+	help
+	  Enable firmware download simulator and MCUboot upgrade request APIs.
+
 endmenu

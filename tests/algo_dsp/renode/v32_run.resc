@@ -1,0 +1,17 @@
+mach create "VangoV32"
+machine LoadPlatformDescription @tests/algo_dsp/renode/v32.repl
+
+# Enable UART logging to system log so we can see it in headless mode
+showAnalyzer uart0
+uart0 RecordToLog true
+
+# Path to the ELF we will build
+$bin?=@build/tests/algo_dsp_renode_v32/zephyr/zephyr.elf
+
+sysbus LoadELF $bin
+
+# Enable logging of function names to show instruction-level execution
+cpu LogFunctionNames true
+
+echo "Renode: Vango V32 Model Loaded. Starting execution..."
+start

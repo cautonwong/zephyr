@@ -15,11 +15,7 @@ manifest:
     - name: zephyr
       remote: zephyrproject-rtos
       revision: main
-      import:
-        name-allowlist:
-          - cmsis_6
-          - hal_nordic
-          - hal_stm32
+      import: true
 
     # Zephyr Modules Repository
     - name: zephyr_modules

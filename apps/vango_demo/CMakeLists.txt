@@ -29,6 +29,7 @@ target_sources_ifdef(CONFIG_MODBUS                app PRIVATE src/services/modbu
 target_sources_ifdef(CONFIG_NETWORKING            app PRIVATE src/services/network_service.c)
 target_sources_ifdef(CONFIG_APP_FEATURE_SECURITY  app PRIVATE src/services/security.c)
 target_sources_ifdef(CONFIG_APP_FEATURE_LOW_POWER app PRIVATE src/services/low_power.c)
+target_sources_ifdef(CONFIG_APP_FEATURE_OTA       app PRIVATE src/services/ota_service.c)
 
 # 4. Global Includes
 target_include_directories(app PRIVATE src)

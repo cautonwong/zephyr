@@ -9,8 +9,8 @@ Implement a robust Inter-Processor Communication (IPC) layer based on Zephyr's I
 ## User Stories
 1. As a system architect, I want a standardized IPC mechanism so that I can decouple real-time tasks from connectivity logic.
 2. As a firmware developer, I want to use RPMsg APIs to send and receive structured data between cores without manually managing hardware registers.
-3. As a metering core (CPU0), I want to push high-frequency accumulation data to the gateway core (CPU1) with minimal latency.
-4. As a gateway core (CPU1), I want to receive metering events and persist them to FlashDB asynchronously.
+3. As a metering core (CPUMETER), I want to push high-frequency accumulation data to the gateway core (CPUAPP) with minimal latency.
+4. As a gateway core (CPUAPP), I want to receive metering events and persist them to FlashDB asynchronously.
 
 ## Implementation Decisions
 - **Hardware Abstraction**: Implement a dedicated Mailbox (MBOX) driver in `modules/soc/v32f20x/drivers` that abstracts the Vango hardware IPC registers.
@@ -20,9 +20,9 @@ Implement a robust Inter-Processor Communication (IPC) layer based on Zephyr's I
 - **Lifecycle Management**: Implement a "Remote Processor Service" to handle core startup and synchronization.
 
 ## Testing Decisions
-- **Ping-Pong Test**: A unit test where CPU0 sends a "Ping" and verifies a "Pong" response from CPU1 within a 10ms deadline.
+- **Ping-Pong Test**: A unit test where CPUMETER sends a "Ping" and verifies a "Pong" response from CPUAPP within a 10ms deadline.
 - **Throughput Benchmark**: Measure the maximum data rate sustainable over RPMsg without dropping packets.
-- **Stress Test**: Run continuous communication for 24 hours while performing FlashDB operations on CPU1 to check for concurrency issues.
+- **Stress Test**: Run continuous communication for 24 hours while performing FlashDB operations on CPUAPP to check for concurrency issues.
 
 ## Out of Scope
 - TrustZone-based secure memory partitioning (will be handled in the Security PRD).

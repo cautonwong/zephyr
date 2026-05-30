@@ -40,7 +40,7 @@
   -T tests/flashdb \
   --device-testing \
   --hardware-map hardware_map.yaml \
-  -p v32f20x_board/v32f20x/cpu0 \
+  -p v32f20x_board/v32f20x/cpuapp_ns \
   -v
 ```
 

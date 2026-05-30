@@ -3,7 +3,7 @@ common:
   tags: flashdb
 tests:
   flashdb.core:
-    platform_allow: v32f20x_board/v32f20x/cpu0
+    platform_allow: v32f20x_board/v32f20x/cpuapp
     extra_args: 
-      - DTC_OVERLAY_FILE="../apps/vango_demo/targets/v32_cpu0_metering/app.overlay"
+      - DTC_OVERLAY_FILE="../apps/vango_demo/targets/v32_cpuapp_gateway/app.overlay"
       - ZEPHYR_MODULES="/workspaces/modules/hal/V32F20X_StdPeriph_Lib_V1.0.6;/workspaces/modules/soc/v32f20x;/workspaces/applications"

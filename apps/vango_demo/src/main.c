@@ -4,6 +4,18 @@
  */
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
+#include <string.h>
+
+#if defined(CONFIG_SOC_V32F20X_CPUAPP)
+static void boot_cpu1(void)
+{
+    /* 
+     * In the Sysbuild architecture, cpumeter is built as a separate image.
+     * It is flashed to a specific flash partition or loaded dynamically.
+     * TODO: Load cpumeter from flash to CPU1_EXEC_RAM_ADDR and release CM0 reset.
+     */
+}
+#endif
 
 #ifdef CONFIG_FLASHDB
 #include <flashdb.h>
@@ -85,8 +97,14 @@ void crash_test(void)
 #endif
 
 extern int ipc_service_init(void);
+#ifdef CONFIG_APP_FEATURE_LOW_POWER
 extern int power_monitor_init(void);
-#if defined(CONFIG_SOC_V32F20X_CPU0)
+extern int low_power_init(void);
+#endif
+#ifdef CONFIG_APP_FEATURE_OTA
+extern int ota_service_init(void);
+#endif
+#if defined(CONFIG_SOC_V32F20X_CPUMETER)
 #include <protocol.h>
 extern int ipc_send_metering(struct metering_data *data);
 #endif
@@ -98,15 +116,30 @@ int main(void)
         LOG_INF("  Build: %s %s", __DATE__, __TIME__);
         LOG_INF("============================================");
 
+#if defined(CONFIG_SOC_V32F20X_CPUAPP)
+    LOG_INF("Core: CPUAPP (Cortex-M33 Primary Core)");
+    LOG_INF("Booting CPU1 (cpumeter) from separate sysbuild image...");
+    boot_cpu1();
+    /* TODO: Hardware register manipulation to release CM0 reset */
+#elif defined(CONFIG_SOC_V32F20X_CPUMETER)
+    LOG_INF("Core: CPUMETER (Cortex-M0 Secondary Core)");
+#endif
+
     /* Initialize IPC Infrastructure */
     ipc_service_init();
+#ifdef CONFIG_APP_FEATURE_LOW_POWER
     power_monitor_init();
+    low_power_init();
+#endif
+#ifdef CONFIG_APP_FEATURE_OTA
+    ota_service_init();
+#endif
 
 #ifdef CONFIG_FLASHDB
     fdb_test();
 #endif
 
-#if defined(CONFIG_SOC_V32F20X_CPU0)
+#if defined(CONFIG_SOC_V32F20X_CPUMETER)
     struct metering_data md = {0};
 #endif
 #if defined(CONFIG_APP_FEATURE_METERING)
@@ -126,7 +159,7 @@ int main(void)
 #endif
 
 	while (1) {
-	#if defined(CONFIG_SOC_V32F20X_CPU0)
+	#if defined(CONFIG_SOC_V32F20X_CPUMETER)
 	        /* Simulate production metering data pulse */
 	        md.active_energy += 10;
 	        md.reactive_energy += 5;

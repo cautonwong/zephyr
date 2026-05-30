@@ -1,0 +1,12 @@
+tests:
+  algo_dsp.math.mocking:
+    tags: dsp
+    harness: ztest
+  
+  algo_dsp.shell.interaction:
+    tags: dsp shell
+    harness: pytest
+    harness_config:
+      pytest_root: pytest
+    platform_allow:
+      - native_sim

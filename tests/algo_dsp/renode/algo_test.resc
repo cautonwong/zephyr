@@ -1,0 +1,24 @@
+# Renode Script (RESC) for Algorithm Verification
+# Target: Generic Cortex-M4 (e.g. STM32F4)
+
+using sysbus
+$name?="Vango_Sim"
+mach create $name
+
+# Load the platform description (using a built-in one for demo)
+machine LoadPlatformDescription @platforms/cpus/stm32f407.repl
+
+# Set the path to our compiled ELF file
+# (This variable should be set when calling renode)
+$bin?=@build/zephyr/zephyr.elf
+
+showAnalyzer sysbus.uart2
+
+macro reset
+"""
+    sysbus LoadELF $bin
+"""
+
+runMacro $reset
+
+echo "Renode: System Loaded. Use 'start' to begin simulation."

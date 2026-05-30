@@ -18,11 +18,11 @@ static void bound_cb(void *priv)
 
 static void recv_cb(const void *data, size_t len, void *priv)
 {
-#if defined(CONFIG_SOC_V32F20X_CPU1)
-    /* CPU1 (Gateway) handles incoming metering data */
+#if defined(CONFIG_SOC_V32F20X_CPUAPP)
+    /* CPUAPP (Gateway) handles incoming metering data */
     if (len == sizeof(struct metering_data)) {
         const struct metering_data *md = (const struct metering_data *)data;
-        LOG_INF("[CPU1] Received: Active=%u, Reactive=%u", md->active_energy, md->reactive_energy);
+        LOG_INF("[CPUAPP] Received: Active=%u, Reactive=%u", md->active_energy, md->reactive_energy);
     }
 #endif
 }
@@ -60,7 +60,7 @@ int ipc_service_init(void)
     return 0;
 }
 
-#if defined(CONFIG_SOC_V32F20X_CPU0)
+#if defined(CONFIG_SOC_V32F20X_CPUMETER)
 int ipc_send_metering(struct metering_data *data)
 {
     return ipc_service_send(&ept, data, sizeof(struct metering_data));

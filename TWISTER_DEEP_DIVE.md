@@ -89,7 +89,7 @@
 
 ```yaml
 # Vango V32F20x Dual-Core HIL Hardware Map
-- platform: v32f20x_board/v32f20x/cpu1     # M33 主核心（网关/连接/存储）
+- platform: v32f20x_board/v32f20x/cpuapp     # M33 主核心（网关/连接/存储）
   id: vango_v32_node_01
   runner: pyocd                            # 使用 pyocd 进行烧录与复位
   probe_id: "0001A2345678"                 # 调试器 J-Link / DAPLink 唯一序列号
@@ -102,7 +102,7 @@
   
   # 使用 CompoundHardwareData 支持的 entries 字段映射 M0 核心和辅助端口
   entries:
-    - platform: v32f20x_board/v32f20x/cpu0 # M0 辅助核心（高频计量）
+    - platform: v32f20x_board/v32f20x/cpumeter # M0 辅助核心（高频计量）
       serial: /dev/ttyUSB0                 # M0 对应的串口
       serial_baud: 115200
       connected: true

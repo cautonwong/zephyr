@@ -16,7 +16,6 @@ for dir in apps boards drivers dts include lib zephyr tests; do
         rsync -a --delete "${WORKSPACE_ROOT}/applications/$dir" "${FAST_SPACE}/applications/"
     fi
 done
-# Sync top-level configuration files
 cp "${WORKSPACE_ROOT}/applications/Kconfig" "${FAST_SPACE}/applications/" || true
 cp "${WORKSPACE_ROOT}/applications/CMakeLists.txt" "${FAST_SPACE}/applications/" || true
 cp "${WORKSPACE_ROOT}/applications/west.yml" "${FAST_SPACE}/applications/" || true
@@ -38,7 +37,7 @@ usage() {
     echo "Commands:"
     echo "  build <app_name> <target> : Build for physical hardware"
     echo "  sim   <app_name>          : Build and run native Linux simulation"
-    echo "  test  <app_name>          : Run Twister tests for the app"
+    echo "  renode <app_name>         : Build ARM ELF and run Renode simulation"
     echo "  clean <app_name>          : Clean build directories"
     exit 1
 }
@@ -49,67 +48,112 @@ fi
 
 APP_PATH="${FAST_SPACE}/applications/apps/${APP_NAME}"
 if [ ! -d "$APP_PATH" ]; then
-    echo "Error: Application directory not found at $APP_PATH"
-    exit 1
+    APP_PATH="${FAST_SPACE}/applications/tests/${APP_NAME}"
+    if [ ! -d "$APP_PATH" ]; then
+        echo "Error: Application directory not found in apps/ or tests/ for $APP_NAME"
+        exit 1
+    fi
 fi
 
 CPUS=$(nproc)
 
 case $COMMAND in
-    build|target)
+    build|target|renode)
+        if [ "$COMMAND" == "renode" ]; then
+            TARGET_NAME="v32_cpuapp_gateway"
+        fi
+
         if [ -z "$TARGET_NAME" ]; then
-            echo "Error: Missing target_profile for build command."
+            echo "Error: Missing target_profile."
             usage
         fi
         
-        BUILD_DIR="${WORKSPACE_ROOT}/applications/build/${APP_NAME}/${TARGET_NAME}"
+        if [ "$COMMAND" == "renode" ]; then
+            BUILD_DIR="${WORKSPACE_ROOT}/applications/build/${APP_NAME}/renode_v32"
+        else
+            BUILD_DIR="${WORKSPACE_ROOT}/applications/build/${APP_NAME}/${TARGET_NAME}"
+        fi
 
         if [[ "$TARGET_NAME" == "v85"* ]]; then
             SOC_TYPE="v85xxp"
             HAL_MODULE="${FAST_SPACE}/modules/hal/V85XXP_Lib_V2.5"
+            BOARD="v85xxp_board"
         else
             SOC_TYPE="v32f20x"
             HAL_MODULE="${FAST_SPACE}/modules/hal/V32F20X_StdPeriph_Lib_V1.0.6"
+            if [[ "$TARGET_NAME" == *"cpumeter"* ]]; then
+                BOARD="v32f20x_board/v32f20x/cpumeter"
+            elif [[ "$TARGET_NAME" == *"ns"* ]]; then
+                BOARD="v32f20x_board/v32f20x/cpuapp/cpuapp_ns"
+            else
+                BOARD="v32f20x_board/v32f20x/cpuapp"
+            fi
         fi
 
         SOC_MODULE="${FAST_SPACE}/modules/soc/${SOC_TYPE}"
-        CMSIS_MODULE="${FAST_SPACE}/rtos/zephyr/modules/hal/cmsis_6"
+        CMSIS_6_MODULE="${FAST_SPACE}/rtos/zephyr/modules/hal/cmsis_6"
+        CMSIS_DSP_MODULE="${FAST_SPACE}/rtos/zephyr/modules/lib/cmsis-dsp"
         SEGGER_MODULE="${FAST_SPACE}/rtos/zephyr/modules/debug/segger"
         APP_MODULE="${FAST_SPACE}/applications"
-        export ZEPHYR_MODULES="${HAL_MODULE};${SOC_MODULE};${CMSIS_MODULE};${SEGGER_MODULE};${APP_MODULE}"
-        export SOC_ROOT="${SOC_MODULE}"
-        export BOARD_ROOT="${SOC_MODULE}"
+        
+        TFM_MODULES="${FAST_SPACE}/rtos/zephyr/modules/tee/tf-m/trusted-firmware-m;${FAST_SPACE}/rtos/zephyr/modules/tee/tf-m/tf-m-tests;${FAST_SPACE}/rtos/zephyr/modules/tee/tf-m/psa-arch-tests;${FAST_SPACE}/rtos/zephyr/modules/crypto/mbedtls;${FAST_SPACE}/rtos/zephyr/modules/crypto/mbedtls-3.6;${FAST_SPACE}/rtos/zephyr/modules/crypto/tf-psa-crypto;${FAST_SPACE}/rtos/zephyr/bootloader/mcuboot;${FAST_SPACE}/rtos/zephyr/modules/lib/zcbor;${FAST_SPACE}/rtos/zephyr/modules/hal/nordic;${FAST_SPACE}/rtos/zephyr/modules/lib/open-amp"
+        export ZEPHYR_MODULES="${HAL_MODULE};${SOC_MODULE};${CMSIS_6_MODULE};${CMSIS_DSP_MODULE};${SEGGER_MODULE};${APP_MODULE};${TFM_MODULES}"
+
+        if [ -d "${ZEPHYR_BASE}/boards/vango/v32f20x_board" ]; then
+            rm -rf "${ZEPHYR_BASE}/boards/vango/v32f20x_board"
+        fi
 
         mkdir -p "$BUILD_DIR"
-        echo "--> [BUILD] App: $APP_NAME, Profile: $TARGET_NAME"
+        echo "--> [$COMMAND] App: $APP_NAME, Target: $BOARD"
         
-        cmake -GNinja -DZEPHYR_MODULES="$ZEPHYR_MODULES" -B"$BUILD_DIR" -S"$APP_PATH" \
-              -DZEPHYR_BASE="$ZEPHYR_BASE" \
-              -DZEPHYR_MODULES="$ZEPHYR_MODULES" \
-              -DSOC_ROOT="$SOC_MODULE" \
-              -DBOARD_ROOT="$SOC_MODULE" \
-              -DDTS_ROOT="$SOC_MODULE" \
-              -DTARGET_NAME="$TARGET_NAME" \
-              -DZEPHYR_CCACHE=ON
+        # Determine if we should use Sysbuild (nRF5340 emulation)
+        if [[ "$TARGET_NAME" == *"cpuapp"* ]]; then
+            echo "--> [SYSBUILD] Activating Zephyr Sysbuild Orchestrator (Multi-Image)"
+            cmake -GNinja -B"$BUILD_DIR" -S"${ZEPHYR_BASE}/share/sysbuild" \
+                  -DAPP_DIR="$APP_PATH" \
+                  -DBOARD="$BOARD" \
+                  -DZEPHYR_BASE="$ZEPHYR_BASE" \
+                  -DZEPHYR_MODULES="$ZEPHYR_MODULES" \
+                  -DSOC_ROOT="$SOC_MODULE" \
+                  -DBOARD_ROOT="$SOC_MODULE" \
+                  -DTARGET_NAME="$TARGET_NAME" \
+                  -DZEPHYR_CCACHE=ON
+        else
+            # Standard single image build
+            cmake -GNinja -B"$BUILD_DIR" -S"$APP_PATH" \
+                  -DBOARD="$BOARD" \
+                  -DZEPHYR_BASE="$ZEPHYR_BASE" \
+                  -DZEPHYR_MODULES="$ZEPHYR_MODULES" \
+                  -DSOC_ROOT="$SOC_MODULE" \
+                  -DBOARD_ROOT="$SOC_MODULE" \
+                  -DTARGET_NAME="$TARGET_NAME" \
+                  -DZEPHYR_CCACHE=ON
+        fi
         
         ninja -C "$BUILD_DIR" -j $CPUS
+
+        if [ "$COMMAND" == "renode" ]; then
+            RESC_FILE="${WORKSPACE_ROOT}/applications/tests/${APP_NAME}/renode/v32_run.resc"
+            echo "--> [RENODE] Starting Headless Simulation (Real-time Logs)..."
+            /opt/renode/renode --disable-xwt -e "s \$bin = @${BUILD_DIR}/zephyr/zephyr.elf; i @${RESC_FILE}; start; sleep 2; quit" > "${WORKSPACE_ROOT}/applications/renode_output.log" 2>&1 || true
+            cat "${WORKSPACE_ROOT}/applications/renode_output.log" | grep -E "VangoV32|cpu|uart0|Booting|PASS|FAIL" | head -n 50
+        fi
         ;;
         
     sim)
         echo "--> [SIM] Building Native Linux Simulation for $APP_NAME"
         BUILD_DIR="${WORKSPACE_ROOT}/applications/build/${APP_NAME}/native_sim"
-        
-        # For native sim, we might not strictly need the hardware HALs, 
-        # but we include the APP_MODULE (our workspace) so it finds custom drivers/dts
-        CMSIS_MODULE="${FAST_SPACE}/rtos/zephyr/modules/hal/cmsis_6"
+        CMSIS_DSP_MODULE="${FAST_SPACE}/rtos/zephyr/modules/lib/cmsis-dsp"
+        CMSIS_6_MODULE="${FAST_SPACE}/rtos/zephyr/modules/hal/cmsis_6"
         APP_MODULE="${FAST_SPACE}/applications"
-        export ZEPHYR_MODULES="${CMSIS_MODULE};${APP_MODULE}"
+        export ZEPHYR_MODULES="${CMSIS_DSP_MODULE};${CMSIS_6_MODULE};${APP_MODULE}"
         
         mkdir -p "$BUILD_DIR"
         cmake -GNinja -B"$BUILD_DIR" -S"$APP_PATH" \
               -DBOARD="native_sim" \
               -DZEPHYR_MODULES="$ZEPHYR_MODULES" \
               -DZEPHYR_BASE="$ZEPHYR_BASE" \
+              -DCONFIG_ASAN=y \
               -DZEPHYR_CCACHE=ON
               
         ninja -C "$BUILD_DIR" -j $CPUS
@@ -121,7 +165,6 @@ case $COMMAND in
     clean)
         echo "--> [CLEAN] Removing build directories for $APP_NAME"
         rm -rf "${WORKSPACE_ROOT}/applications/build/${APP_NAME}"
-        rm -rf "${WORKSPACE_ROOT}/applications/apps/${APP_NAME}/build_native"
         ;;
         
     *)

@@ -1,0 +1,13 @@
+logFile @/workspaces/applications/renode_internal.log
+mach create "VangoV32"
+machine LoadPlatformDescription @/workspaces/applications/tests/algo_dsp/renode/v32.repl
+
+showAnalyzer uart0
+uart0 RecordToLog true
+
+sysbus LoadELF @/workspaces/applications/build/algo_dsp/renode_v32/zephyr/zephyr.elf
+cpu LogFunctionNames true
+
+start
+sleep 5000
+quit
