@@ -320,6 +320,38 @@ static void ad7616_busy_handler(const struct device *port, struct gpio_callback 
     spi_read_cb(&config->spi, &data->rx_spi_set, ad7616_spi_done_cb, data);
 }
 
+#include <zephyr/pm/device.h>
+
+/* --- Power Management Support --- */
+
+#ifdef CONFIG_PM_DEVICE
+static int ad7616_pm_action(const struct device *dev,
+                            enum pm_device_action action)
+{
+    const struct ad7616_config *config = dev->config;
+    int ret = 0;
+
+    switch (action) {
+    case PM_DEVICE_ACTION_SUSPEND:
+        LOG_INF("Suspending AD7616: Putting chip in hardware reset");
+        /* Pull reset low to minimize leakage current on the chip */
+        gpio_pin_set_dt(&config->reset_gpio, 0);
+        /* Note: SPI bus will be handled by its own PM if enabled */
+        break;
+    case PM_DEVICE_ACTION_RESUME:
+        LOG_INF("Resuming AD7616: Re-initializing...");
+        gpio_pin_set_dt(&config->reset_gpio, 1);
+        k_msleep(15);
+        /* Re-apply config if state was lost */
+        break;
+    default:
+        return -ENOTSUP;
+    }
+
+    return ret;
+}
+#endif
+
 /* --- Initialization --- */
 
 static const struct adc_driver_api ad7616_api = {
@@ -403,6 +435,9 @@ static int ad7616_init(const struct device *dev)
 
     ad7616_reg_write(dev, AD7616_REG_CONFIG, config_reg);
 
+    /* Start in Active mode by default */
+    pm_device_runtime_enable(dev);
+
     LOG_INF("AD7616 initialized successfully");
     return 0;
 }
@@ -418,8 +453,9 @@ static int ad7616_init(const struct device *dev)
         .default_osr = DT_INST_PROP_OR(n, adi_osr, 0),                         \
         .sequencer_en = DT_INST_PROP_OR(n, adi_sequencer_en, false),           \
     };                                                                         \
-    DEVICE_DT_INST_DEFINE(n, ad7616_init, NULL, &ad7616_data_##n,              \
-                          &ad7616_config_##n, POST_KERNEL,                     \
+    PM_DEVICE_DT_INST_DEFINE(n, ad7616_pm_action);                             \
+    DEVICE_DT_INST_DEFINE(n, ad7616_init, PM_DEVICE_DT_INST_GET(n),            \
+                          &ad7616_data_##n, &ad7616_config_##n, POST_KERNEL,   \
                           CONFIG_ADC_INIT_PRIORITY, &ad7616_api);
 
 DT_INST_FOREACH_STATUS_OKAY(AD7616_INST)

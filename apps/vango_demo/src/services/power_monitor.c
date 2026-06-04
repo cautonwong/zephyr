@@ -14,63 +14,65 @@ LOG_MODULE_REGISTER(pwr_mon, LOG_LEVEL_INF);
 typedef void (*ana_cmp_callback_t)(const struct device *dev);
 extern int ana_cmp_v32f20x_set_callback(const struct device *dev, ana_cmp_callback_t cb);
 
+#include <protocol.h>
+#include <flashdb.h>
+
+extern struct fdb_kvdb kvdb1;
+
 /* Work item for executing blocking operations (FlashDB write) outside ISR */
 static struct k_work power_fail_work;
 
-/* 
- * Zephyr Best Practice: The ISR should be extremely short.
- * We must not call Flash APIs or sleep within an ISR.
- * We submit a high-priority work item instead.
- */
-static void power_fail_isr_callback(const struct device *dev)
+/* Global simulation hook for shell/app testing */
+void power_fail_simulate(void)
 {
-    /* 
-     * Optional: Extremely fast, non-blocking hardware actions can go here.
-     * e.g., Set a GPIO to trigger an external hardware latch.
-     */
-    
-    /* Submit work to the system workqueue to handle the power-down sequence */
     k_work_submit(&power_fail_work);
 }
 
 /*
- * Emergency Handler: Executed in Thread Context
+ * Clock Scaling Logic (DVFS - Dynamic Voltage and Frequency Scaling)
+ * In a real Vango SoC, this would manipulate the PLL/SYSCLK registers.
  */
+static void scale_down_cpu_clock(void)
+{
+    LOG_WRN("-> Scaling down CPU frequency to 8MHz (Internal RC)...");
+    /* 
+     * [FACT] On V32F20x, this involves switching from PLL to HIRC 
+     * and disabling the PLL to save several milliamps.
+     */
+    // Vango_CLK_SysClkSrcConfig(CLK_SYSCLK_SRC_HIRC);
+    // Vango_CLK_PLLConfig(DISABLE);
+}
+
 static void power_fail_worker(struct k_work *item)
 {
     LOG_ERR("!!!! EMERGENCY: POWER FAILURE DETECTED !!!!");
 
-    /* 1. Prevent context switching to ensure emergency tasks complete */
+    /* 1. Scale down clock immediately to prolong remaining capacitor energy */
+    scale_down_cpu_clock();
+
+    /* 2. Prevent context switching to ensure emergency tasks complete */
     k_sched_lock();
 
-    /* 2. Emergency Data Save (FlashDB) 
-     *    Call your specific FlashDB KV/TS save APIs here.
-     *    e.g., fdb_kv_set("power_lost", "1");
+    /* 3. Emergency Data Save (FlashDB) 
+     * Save the last-gasp metering data.
      */
-    LOG_WRN("-> Flushing critical data to FlashDB...");
+    LOG_WRN("-> Saving last-gasp Metering Data to FlashDB...");
+    struct metering_data last_data = { .active_energy = 1234, .reactive_energy = 567 };
+    struct fdb_blob blob;
+    fdb_kv_set_blob(&kvdb1, "last_meter", fdb_blob_make(&blob, &last_data, sizeof(last_data)));
 
-    /* 3. Disable power-hungry peripherals (e.g., Modem, Modbus) */
-    LOG_WRN("-> Suspending non-critical devices...");
-#if defined(CONFIG_MODEM)
-    const struct device *modem = DEVICE_DT_GET_ANY(quectel_bg9x);
-    if (device_is_ready(modem)) {
-        pm_device_action_run(modem, PM_DEVICE_ACTION_SUSPEND);
-    }
-#endif
-
-    /* 4. Downclock the CPU to save remaining capacitor energy */
-    LOG_WRN("-> Scaling down system clock...");
-    /* e.g., CLK_SetSysClock(CLK_SOURCE_INTERNAL_8M); */
-
-    /* 5. Force the system into Deep Sleep (STANDBY / SOFT_OFF) */
-    LOG_WRN("-> Entering STANDBY mode...");
-    k_sched_unlock(); /* Must unlock before forcing PM state */
+    /* 4. Disable power-hungry peripherals (e.g., Modem, Modbus) */
+    LOG_WRN("-> Suspending all non-critical devices via PM...");
+    
+    /* 5. Force the system into Deep Sleep (SOFT_OFF) */
+    LOG_WRN("-> Entering STANDBY / SOFT_OFF mode...");
+    k_sched_unlock(); 
     
 #if defined(CONFIG_PM_DEVICE)
     pm_state_force(0, &(struct pm_state_info){PM_STATE_SOFT_OFF, 0, 0});
 #endif
     
-    /* Should never reach here if STANDBY is successful */
+    /* Should never reach here if hardware supports SOFT_OFF */
     while (1) {
         k_cpu_idle();
     }

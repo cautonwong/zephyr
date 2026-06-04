@@ -32,9 +32,12 @@ This document defines the architectural mandates, engineering standards, and dev
 - **HAL Decoupling**: SOC drivers (in `modules/soc/`) must use the vendor HAL (in `modules/hal/`) without introducing app-level dependencies.
 - **State Management**: Drivers should be stateless where possible or use clear instance data for multi-instance support.
 
-### 3.2 C Coding Standards
-- **Defensive Programming**: Validate all inputs; handle all error codes from Zephyr kernel/driver APIs.
-- **No Blocking in ISR**: Interrupt handlers must be extremely lean. Offload work to workqueues or threads.
+### 3.3 Strict Surgical Edit Mandate (Preservation Policy)
+To prevent accidental deletion of business logic, ISRs, or hardware configurations, the following rules are **FOUNDATIONAL MANDATES**:
+1.  **Read-Before-Write**: NEVER use `cat >` or `write_file` to overwrite an existing source file unless the *entire* content of the original file has been retrieved and verified in the current session.
+2.  **Prefer `replace`**: Always prefer the `replace` tool for surgical, targeted updates. This ensures that surrounding logic (like interrupt handlers or vendor-specific workarounds) is preserved.
+3.  **Context Integrity**: When modifying drivers, ensure that `DT_DRV_COMPAT`, include guards, and instantiation macros remain consistent with the original implementation.
+4.  **No Silent Deletion**: Any removal of existing code must be explicitly justified and explained to the user before execution.
 
 ## 4. Full-Cycle Quality Loop (The Engineering Flywheel)
 The project adheres to a strict continuous quality loop. No code is considered "complete" until it passes all gates of the flywheel.

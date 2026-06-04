@@ -19,6 +19,10 @@ done
 cp "${WORKSPACE_ROOT}/applications/Kconfig" "${FAST_SPACE}/applications/" || true
 cp "${WORKSPACE_ROOT}/applications/CMakeLists.txt" "${FAST_SPACE}/applications/" || true
 cp "${WORKSPACE_ROOT}/applications/west.yml" "${FAST_SPACE}/applications/" || true
+# CRITICAL: Sync modules to RAM-disk to ensure logic patches are visible
+if [ -d "${WORKSPACE_ROOT}/modules" ]; then
+    rsync -a --delete "${WORKSPACE_ROOT}/modules/" "${FAST_SPACE}/modules/"
+fi
 
 export ZEPHYR_SDK_INSTALL_DIR=/opt/zephyr-sdk-1.0.1
 export ZEPHYR_BASE="${FAST_SPACE}/rtos/zephyr/zephyr"
@@ -109,23 +113,23 @@ case $COMMAND in
         # Determine if we should use Sysbuild (nRF5340 emulation)
         if [[ "$TARGET_NAME" == *"cpuapp"* ]]; then
             echo "--> [SYSBUILD] Activating Zephyr Sysbuild Orchestrator (Multi-Image)"
-            cmake -GNinja -B"$BUILD_DIR" -S"${ZEPHYR_BASE}/share/sysbuild" \
+            cmake -GNinja -DBOARD=v32f20x_board/v32f20x/cpuapp/cpuapp -DBOARD_ROOT=/workspaces/modules/soc/v32f20x -B"$BUILD_DIR" -S"${ZEPHYR_BASE}/share/sysbuild" \
                   -DAPP_DIR="$APP_PATH" \
                   -DBOARD="$BOARD" \
                   -DZEPHYR_BASE="$ZEPHYR_BASE" \
-                  -DZEPHYR_MODULES="$ZEPHYR_MODULES" \
+                  -DZEPHYR_MODULES="$ZEPHYR_MODULES" -DBOARD_ROOT=/workspaces/modules/soc/v32f20x -DSOC_ROOT="$SOC_MODULE" \
                   -DSOC_ROOT="$SOC_MODULE" \
-                  -DBOARD_ROOT="$SOC_MODULE" \
+                  -DBOARD_ROOT=/workspaces/modules/soc/v32f20x \
                   -DTARGET_NAME="$TARGET_NAME" \
                   -DZEPHYR_CCACHE=ON
         else
             # Standard single image build
-            cmake -GNinja -B"$BUILD_DIR" -S"$APP_PATH" \
+            cmake -GNinja -DBOARD=v32f20x_board/v32f20x/cpuapp/cpuapp -DBOARD_ROOT=/workspaces/modules/soc/v32f20x -B"$BUILD_DIR" -S"$APP_PATH" -DBOARD=v32f20x_board/v32f20x/cpuapp/cpuapp -DBOARD_ROOT=/workspaces/modules/soc/v32f20x -DBOARD=v32f20x_board/v32f20x/cpuapp/cpuapp -DBOARD_ROOT=/workspaces/modules/soc/v32f20x \
                   -DBOARD="$BOARD" \
                   -DZEPHYR_BASE="$ZEPHYR_BASE" \
-                  -DZEPHYR_MODULES="$ZEPHYR_MODULES" \
+                  -DZEPHYR_MODULES="$ZEPHYR_MODULES" -DBOARD_ROOT=/workspaces/modules/soc/v32f20x -DSOC_ROOT="$SOC_MODULE" \
                   -DSOC_ROOT="$SOC_MODULE" \
-                  -DBOARD_ROOT="$SOC_MODULE" \
+                  -DBOARD_ROOT=/workspaces/modules/soc/v32f20x \
                   -DTARGET_NAME="$TARGET_NAME" \
                   -DZEPHYR_CCACHE=ON
         fi
@@ -149,9 +153,9 @@ case $COMMAND in
         export ZEPHYR_MODULES="${CMSIS_DSP_MODULE};${CMSIS_6_MODULE};${APP_MODULE}"
         
         mkdir -p "$BUILD_DIR"
-        cmake -GNinja -B"$BUILD_DIR" -S"$APP_PATH" \
+        cmake -GNinja -DBOARD=v32f20x_board/v32f20x/cpuapp/cpuapp -DBOARD_ROOT=/workspaces/modules/soc/v32f20x -B"$BUILD_DIR" -S"$APP_PATH" -DBOARD=v32f20x_board/v32f20x/cpuapp/cpuapp -DBOARD_ROOT=/workspaces/modules/soc/v32f20x -DBOARD=v32f20x_board/v32f20x/cpuapp/cpuapp -DBOARD_ROOT=/workspaces/modules/soc/v32f20x \
               -DBOARD="native_sim" \
-              -DZEPHYR_MODULES="$ZEPHYR_MODULES" \
+              -DZEPHYR_MODULES="$ZEPHYR_MODULES" -DBOARD_ROOT=/workspaces/modules/soc/v32f20x -DSOC_ROOT="$SOC_MODULE" \
               -DZEPHYR_BASE="$ZEPHYR_BASE" \
               -DCONFIG_ASAN=y \
               -DZEPHYR_CCACHE=ON

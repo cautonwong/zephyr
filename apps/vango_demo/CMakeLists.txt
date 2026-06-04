@@ -1,4 +1,15 @@
 cmake_minimum_required(VERSION 3.20.0)
+# --- HWMv2 FORCED PATH (SURGICAL FIX) ---
+if(NOT DEFINED BOARD_ROOT)
+    set(BOARD_ROOT /root/fast_space/modules/soc/v32f20x /workspaces/modules/soc/v32f20x)
+endif()
+if(NOT DEFINED SOC_ROOT)
+    set(SOC_ROOT /root/fast_space/modules/soc/v32f20x /workspaces/modules/soc/v32f20x)
+endif()
+if(BOARD STREQUAL "v32f20x_board/v32f20x/cpuapp")
+    set(BOARD v32f20x_board/v32f20x/cpuapp/cpuapp CACHE STRING "" FORCE)
+endif()
+# ----------------------------------------
 
 # 1. Target Profile Loading (Building a repeatable preset system)
 if(TARGET_NAME)
@@ -19,6 +30,7 @@ target_sources(app PRIVATE
     src/main.c
     src/services/ipc_service.c
     src/services/power_monitor.c
+    src/services/storage_init.c
 )
 
 # 3. Capability-based Service Inclusion
@@ -32,4 +44,8 @@ target_sources_ifdef(CONFIG_APP_FEATURE_LOW_POWER app PRIVATE src/services/low_p
 target_sources_ifdef(CONFIG_APP_FEATURE_OTA       app PRIVATE src/services/ota_service.c)
 
 # 4. Global Includes
-target_include_directories(app PRIVATE src)
+target_include_directories(app PRIVATE 
+    src
+    /workspaces/applications/lib/flashdb/src/inc
+    /workspaces/applications/lib/flashdb/port
+)
