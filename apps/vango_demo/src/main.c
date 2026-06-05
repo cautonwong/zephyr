@@ -6,18 +6,16 @@
 #include <zephyr/logging/log.h>
 #include <string.h>
 
+LOG_MODULE_REGISTER(app_main, LOG_LEVEL_INF);
+
 #if defined(CONFIG_SOC_V32F20X_CPUAPP)
 static void boot_cpu1(void)
 {
-    /* 
-     * In the Sysbuild architecture, cpumeter is built as a separate image.
-     * It is flashed to a specific flash partition or loaded dynamically.
-     * TODO: Load cpumeter from flash to CPU1_EXEC_RAM_ADDR and release CM0 reset.
-     */
+    LOG_INF("Releasing CM0 (Metering) core reset...");
+    /* V32F20X SYSCFGLP CM0_CTRL: bit 0 is Reset (1=Reset, 0=Run) */
+    *(volatile uint32_t *)0x40102050 = 0;
 }
 #endif
-
-LOG_MODULE_REGISTER(app_main, LOG_LEVEL_INF);
 
 #ifdef CONFIG_COREDUMP
 void crash_test(void)
@@ -70,15 +68,15 @@ int main(void)
     struct metering_data md = {0};
 #endif
 
-	while (1) {
-	#if defined(CONFIG_SOC_V32F20X_CPUMETER)
-	        /* Simulate production metering data pulse */
-	        md.active_energy += 10;
-	        md.reactive_energy += 5;
-	        md.timestamp = k_uptime_get_32();
-	        ipc_send_metering(&md);
-	#endif
-	        k_msleep(10000);
-	}
-	return 0;
+        while (1) {
+        #if defined(CONFIG_SOC_V32F20X_CPUMETER)
+                /* Simulate production metering data pulse */
+                md.active_energy += 10;
+                md.reactive_energy += 5;
+                md.timestamp = k_uptime_get_32();
+                ipc_send_metering(&md);
+        #endif
+                k_msleep(10000);
+        }
+        return 0;
 }
