@@ -11,21 +11,25 @@
             label = "mcuboot";
             reg = <0x00000000 DT_SIZE_K(64)>;
         };
-        cpumeter_partition: partition@1A0000 {
+        slot0_partition: partition@10000 {
             label = "image-0";
-            reg = <0x001A0000 DT_SIZE_K(128)>;
+            reg = <0x00010000 DT_SIZE_K(576)>; 
         };
-        slot1_partition: partition@110000 {
+        slot1_partition: partition@A0000 {
             label = "image-1";
-            reg = <0x00110000 DT_SIZE_M(1)>;
+            reg = <0x000A0000 DT_SIZE_K(576)>; 
         };
-        scratch_partition: partition@210000 {
+        scratch_partition: partition@140000 {
             label = "image-scratch";
-            reg = <0x00210000 DT_SIZE_K(64)>;
+            reg = <0x00140000 DT_SIZE_K(64)>;
         };
-        storage_partition: partition@220000 {
+        storage_partition: partition@150000 {
             label = "storage";
-            reg = <0x00220000 DT_SIZE_K(128)>;
+            reg = <0x00150000 DT_SIZE_K(128)>;
+        };
+        cpumeter_partition: partition@1A0000 {
+            label = "cpumeter";
+            reg = <0x001A0000 DT_SIZE_K(128)>;
         };
     };
 };

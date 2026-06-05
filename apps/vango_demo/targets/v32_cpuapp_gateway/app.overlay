@@ -26,35 +26,36 @@
 &flash0 {
     status = "okay";
     partitions {
-        /delete-node/ partition@50000;
-        /delete-node/ partition@b0000;
-        /delete-node/ partition@f0000;
-        /delete-node/ partition@150000;
-        /delete-node/ partition@160000;
-
         compatible = "fixed-partitions";
         #address-cells = <1>;
         #size-cells = <1>;
 
+        /* Aligned EXACTLY with TF-M flash_layout.h */
         boot_partition: partition@0 {
             label = "mcuboot";
             reg = <0x00000000 DT_SIZE_K(64)>;
         };
         slot0_partition: partition@10000 {
             label = "image-0";
-            reg = <0x00010000 DT_SIZE_M(1)>;
+            reg = <0x00010000 DT_SIZE_K(576)>; /* S + NS Primary */
         };
-        slot1_partition: partition@110000 {
+        slot1_partition: partition@A0000 {
             label = "image-1";
-            reg = <0x00110000 DT_SIZE_M(1)>;
+            reg = <0x000A0000 DT_SIZE_K(576)>; /* S + NS Secondary */
         };
-        scratch_partition: partition@210000 {
+        /* 0x130000 - 0x138000 is reserved for TF-M PS, ITS, OTP */
+        scratch_partition: partition@140000 {
             label = "image-scratch";
-            reg = <0x00210000 DT_SIZE_K(64)>;
+            reg = <0x00140000 DT_SIZE_K(64)>;
         };
-        storage_partition: partition@220000 {
+        storage_partition: partition@150000 {
             label = "storage";
-            reg = <0x00220000 DT_SIZE_K(128)>;
+            reg = <0x00150000 DT_SIZE_K(128)>;
+        };
+        /* M0 Core Partition */
+        cpumeter_partition: partition@1A0000 {
+            label = "cpumeter";
+            reg = <0x001A0000 DT_SIZE_K(128)>;
         };
     };
 };
@@ -71,8 +72,6 @@
         zephyr,code-partition = &slot0_partition;
         zephyr,ipc_shm = &ipc_shm_0;
     };
-
-
 
     ipc0: ipc0 {
         compatible = "zephyr,ipc-icmsg";
