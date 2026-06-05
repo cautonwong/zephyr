@@ -11,9 +11,12 @@ LOG_MODULE_REGISTER(app_main, LOG_LEVEL_INF);
 #if defined(CONFIG_SOC_V32F20X_CPUAPP)
 static void boot_cpu1(void)
 {
-    LOG_INF("Releasing CM0 (Metering) core reset...");
-    /* V32F20X SYSCFGLP CM0_CTRL: bit 0 is Reset (1=Reset, 0=Run) */
-    *(volatile uint32_t *)0x40102050 = 0;
+    LOG_INF("Setting CM0 (Metering) VTOR and releasing reset...");
+    /* V32F20X SYSCFG1 M0_IVT_BADDR (Secure Alias): set VTOR to CPUMETER partition */
+    *(volatile uint32_t *)0x31030064 = 0x081A0000;
+    
+    /* V32F20X SYSCFGLP CM0_CTRL (Secure Alias): bit 0 is Reset (1=Reset, 0=Run) */
+    *(volatile uint32_t *)0x50102050 = 0; /* 0x40102000 + 0x10000000 + 0x50 */
 }
 #endif
 
