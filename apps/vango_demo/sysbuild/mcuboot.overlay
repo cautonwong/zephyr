@@ -1,0 +1,49 @@
+&flash0 {
+    status = "okay";
+    partitions {
+        /delete-node/ partition@10000;
+        /delete-node/ partition@50000;
+        /delete-node/ partition@b0000;
+        /delete-node/ partition@f0000;
+        /delete-node/ partition@B0000;
+        /delete-node/ partition@F0000;
+        /delete-node/ partition@150000;
+        /delete-node/ partition@160000;
+
+        compatible = "fixed-partitions";
+        #address-cells = <1>;
+        #size-cells = <1>;
+
+        /* Aligned EXACTLY with TF-M flash_layout.h */
+        boot_partition: partition@0 {
+            label = "mcuboot";
+            reg = <0x00000000 DT_SIZE_K(64)>;
+        };
+        slot0_partition: partition@10000 {
+            label = "image-0";
+            reg = <0x00010000 DT_SIZE_K(576)>;
+        };
+        slot1_partition: partition@A0000 {
+            label = "image-1";
+            reg = <0x000A0000 DT_SIZE_K(576)>;
+        };
+        scratch_partition: partition@140000 {
+            label = "image-scratch";
+            reg = <0x00140000 DT_SIZE_K(64)>;
+        };
+        storage_partition: partition@150000 {
+            label = "storage";
+            reg = <0x00150000 DT_SIZE_K(128)>;
+        };
+        cpumeter_partition: partition@1A0000 {
+            label = "cpumeter";
+            reg = <0x001A0000 DT_SIZE_K(128)>;
+        };
+    };
+};
+
+/ {
+    chosen {
+        zephyr,code-partition = &boot_partition;
+    };
+};

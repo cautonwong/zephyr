@@ -78,6 +78,9 @@ case $COMMAND in
             BUILD_DIR="${WORKSPACE_ROOT}/applications/build/${APP_NAME}/${TARGET_NAME}"
         fi
 
+        # Standard Zephyr environment variable to pass board roots to all sysbuild images
+        export ZEPHYR_BOARD_ROOT="/workspaces/modules/soc/v32f20x;${FAST_SPACE}/modules/soc/v32f20x"
+
         if [[ "$TARGET_NAME" == "v85"* ]]; then
             SOC_TYPE="v85xxp"
             HAL_MODULE="${FAST_SPACE}/modules/hal/V85XXP_Lib_V2.5"
@@ -113,24 +116,26 @@ case $COMMAND in
         # Determine if we should use Sysbuild (nRF5340 emulation)
         if [[ "$TARGET_NAME" == *"cpuapp"* ]]; then
             echo "--> [SYSBUILD] Activating Zephyr Sysbuild Orchestrator (Multi-Image)"
-            cmake -GNinja -DBOARD=v32f20x_board/v32f20x/cpuapp/cpuapp -DBOARD_ROOT=/workspaces/modules/soc/v32f20x -B"$BUILD_DIR" -S"${ZEPHYR_BASE}/share/sysbuild" \
+            cmake -GNinja -B"$BUILD_DIR" -S"${ZEPHYR_BASE}/share/sysbuild" \
                   -DAPP_DIR="$APP_PATH" \
                   -DBOARD="$BOARD" \
                   -DZEPHYR_BASE="$ZEPHYR_BASE" \
-                  -DZEPHYR_MODULES="$ZEPHYR_MODULES" -DBOARD_ROOT=/workspaces/modules/soc/v32f20x -DSOC_ROOT="$SOC_MODULE" \
+                  -DZEPHYR_MODULES="$ZEPHYR_MODULES" \
+                  -DBOARD_ROOT="/workspaces/modules/soc/v32f20x;${FAST_SPACE}/modules/soc/v32f20x" \
                   -DSOC_ROOT="$SOC_MODULE" \
-                  -DBOARD_ROOT=/workspaces/modules/soc/v32f20x \
                   -DTARGET_NAME="$TARGET_NAME" \
+                  -DKCONFIG_WERROR=OFF \
                   -DZEPHYR_CCACHE=ON
         else
             # Standard single image build
-            cmake -GNinja -DBOARD=v32f20x_board/v32f20x/cpuapp/cpuapp -DBOARD_ROOT=/workspaces/modules/soc/v32f20x -B"$BUILD_DIR" -S"$APP_PATH" -DBOARD=v32f20x_board/v32f20x/cpuapp/cpuapp -DBOARD_ROOT=/workspaces/modules/soc/v32f20x -DBOARD=v32f20x_board/v32f20x/cpuapp/cpuapp -DBOARD_ROOT=/workspaces/modules/soc/v32f20x \
+            cmake -GNinja -B"$BUILD_DIR" -S"$APP_PATH" \
                   -DBOARD="$BOARD" \
                   -DZEPHYR_BASE="$ZEPHYR_BASE" \
-                  -DZEPHYR_MODULES="$ZEPHYR_MODULES" -DBOARD_ROOT=/workspaces/modules/soc/v32f20x -DSOC_ROOT="$SOC_MODULE" \
+                  -DZEPHYR_MODULES="$ZEPHYR_MODULES" \
+                  -DBOARD_ROOT="/workspaces/modules/soc/v32f20x;${FAST_SPACE}/modules/soc/v32f20x" \
                   -DSOC_ROOT="$SOC_MODULE" \
-                  -DBOARD_ROOT=/workspaces/modules/soc/v32f20x \
                   -DTARGET_NAME="$TARGET_NAME" \
+                  -DKCONFIG_WERROR=OFF \
                   -DZEPHYR_CCACHE=ON
         fi
         

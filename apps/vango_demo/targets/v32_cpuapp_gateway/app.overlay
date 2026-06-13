@@ -26,6 +26,13 @@
 &flash0 {
     status = "okay";
     partitions {
+        /delete-node/ partition@10000;
+        /delete-node/ partition@50000;
+        /delete-node/ partition@b0000;
+        /delete-node/ partition@f0000;
+        /delete-node/ partition@150000;
+        /delete-node/ partition@160000;
+
         compatible = "fixed-partitions";
         #address-cells = <1>;
         #size-cells = <1>;
@@ -71,6 +78,8 @@
         zephyr,entropy = &rng0;
         zephyr,code-partition = &slot0_partition;
         zephyr,ipc_shm = &ipc_shm_0;
+        /* Required for MCUboot when built via sysbuild */
+        zephyr,boot-partition = &boot_partition;
     };
 
     ipc0: ipc0 {
