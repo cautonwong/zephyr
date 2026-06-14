@@ -3,10 +3,9 @@
     partitions {
         /delete-node/ partition@10000;
         /delete-node/ partition@50000;
+        /delete-node/ partition@a0000;
         /delete-node/ partition@b0000;
         /delete-node/ partition@f0000;
-        /delete-node/ partition@B0000;
-        /delete-node/ partition@F0000;
         /delete-node/ partition@150000;
         /delete-node/ partition@160000;
 
@@ -14,7 +13,7 @@
         #address-cells = <1>;
         #size-cells = <1>;
 
-        /* Aligned EXACTLY with TF-M flash_layout.h */
+        /* Aligned EXACTLY with TF-M flash_layout.h (2304KB Total) */
         boot_partition: partition@0 {
             label = "mcuboot";
             reg = <0x00000000 DT_SIZE_K(64)>;
@@ -27,17 +26,26 @@
             label = "image-1";
             reg = <0x000A0000 DT_SIZE_K(576)>;
         };
+        /* 0x130000 - 0x140000 is reserved for TF-M PS (16K), ITS (32K), NV (16K) */
         scratch_partition: partition@140000 {
             label = "image-scratch";
             reg = <0x00140000 DT_SIZE_K(64)>;
         };
-        storage_partition: partition@150000 {
-            label = "storage";
+        cpumeter_partition: partition@150000 {
+            label = "cpumeter";
             reg = <0x00150000 DT_SIZE_K(128)>;
         };
-        cpumeter_partition: partition@1A0000 {
-            label = "cpumeter";
-            reg = <0x001A0000 DT_SIZE_K(128)>;
+        storage_partition: partition@170000 {
+            label = "storage";
+            reg = <0x00170000 DT_SIZE_K(128)>;
+        };
+        model_partition: partition@190000 {
+            label = "model";
+            reg = <0x00190000 DT_SIZE_K(128)>;
+        };
+        recovery_partition: partition@1B0000 {
+            label = "recovery";
+            reg = <0x001B0000 DT_SIZE_K(576)>;
         };
     };
 };
@@ -45,5 +53,6 @@
 / {
     chosen {
         zephyr,code-partition = &boot_partition;
+        zephyr,boot-partition = &boot_partition;
     };
 };

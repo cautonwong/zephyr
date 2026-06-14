@@ -28,16 +28,24 @@
     partitions {
         /delete-node/ partition@10000;
         /delete-node/ partition@50000;
+        /delete-node/ partition@a0000;
         /delete-node/ partition@b0000;
         /delete-node/ partition@f0000;
+        /delete-node/ partition@130000;
+        /delete-node/ partition@134000;
+        /delete-node/ partition@13c000;
+        /delete-node/ partition@140000;
         /delete-node/ partition@150000;
         /delete-node/ partition@160000;
+        /delete-node/ partition@170000;
+        /delete-node/ partition@190000;
+        /delete-node/ partition@1b0000;
 
         compatible = "fixed-partitions";
         #address-cells = <1>;
         #size-cells = <1>;
 
-        /* Aligned EXACTLY with TF-M flash_layout.h */
+        /* Phase 5: Dimension 1.1 Topology (2304KB Total) */
         boot_partition: partition@0 {
             label = "mcuboot";
             reg = <0x00000000 DT_SIZE_K(64)>;
@@ -50,19 +58,42 @@
             label = "image-1";
             reg = <0x000A0000 DT_SIZE_K(576)>; /* S + NS Secondary */
         };
-        /* 0x130000 - 0x138000 is reserved for TF-M PS, ITS, OTP */
+        
+        /* TF-M Security Regions */
+        tfm_ps_partition: partition@130000 {
+            label = "tfm-ps";
+            reg = <0x00130000 DT_SIZE_K(16)>;
+        };
+        tfm_its_partition: partition@134000 {
+            label = "tfm-its";
+            reg = <0x00134000 DT_SIZE_K(32)>;
+        };
+        tfm_nv_counters_partition: partition@13C000 {
+            label = "tfm-nv-counters";
+            reg = <0x0013C000 DT_SIZE_K(16)>; /* Incl. Backup */
+        };
+
         scratch_partition: partition@140000 {
             label = "image-scratch";
             reg = <0x00140000 DT_SIZE_K(64)>;
         };
-        storage_partition: partition@150000 {
-            label = "storage";
+
+        /* Custom & Application Partitions */
+        cpumeter_partition: partition@150000 {
+            label = "cpumeter";
             reg = <0x00150000 DT_SIZE_K(128)>;
         };
-        /* M0 Core Partition */
-        cpumeter_partition: partition@1A0000 {
-            label = "cpumeter";
-            reg = <0x001A0000 DT_SIZE_K(128)>;
+        storage_partition: partition@170000 {
+            label = "storage";
+            reg = <0x00170000 DT_SIZE_K(128)>;
+        };
+        model_partition: partition@190000 {
+            label = "model";
+            reg = <0x00190000 DT_SIZE_K(128)>;
+        };
+        recovery_partition: partition@1B0000 {
+            label = "recovery";
+            reg = <0x001B0000 DT_SIZE_K(576)>;
         };
     };
 };
@@ -78,7 +109,6 @@
         zephyr,entropy = &rng0;
         zephyr,code-partition = &slot0_partition;
         zephyr,ipc_shm = &ipc_shm_0;
-        /* Required for MCUboot when built via sysbuild */
         zephyr,boot-partition = &boot_partition;
     };
 
