@@ -37,6 +37,9 @@ extern int low_power_init(void);
 #ifdef CONFIG_APP_FEATURE_OTA
 extern int ota_service_init(void);
 #endif
+extern int watchdog_init(void);
+extern void watchdog_feed(void);
+
 #if defined(CONFIG_SOC_V32F20X_CPUMETER)
 #include <protocol.h>
 extern int ipc_send_metering(struct metering_data *data);
@@ -58,6 +61,7 @@ int main(void)
 #endif
 
     /* Initialize Services (Note: FlashDB is now handled via SYS_INIT) */
+    watchdog_init();
     ipc_service_init();
 #ifdef CONFIG_APP_FEATURE_LOW_POWER
     power_monitor_init();
@@ -72,6 +76,7 @@ int main(void)
 #endif
 
         while (1) {
+                watchdog_feed();
         #if defined(CONFIG_SOC_V32F20X_CPUMETER)
                 /* Simulate production metering data pulse */
                 md.active_energy += 10;

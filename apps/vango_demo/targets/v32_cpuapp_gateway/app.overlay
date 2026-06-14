@@ -98,11 +98,16 @@
     };
 };
 
+&watchdog0 {
+    status = "okay";
+};
+
 / {
     aliases {
         app-uart = &uart14;
         app-modbus = &modbus0;
         app-modem = &modem0;
+        watchdog0 = &watchdog0;
     };
 
     chosen {
