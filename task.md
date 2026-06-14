@@ -33,7 +33,9 @@
 | **1.2 容灾引导与掉电安全测试** | ✅ 完成 | 启用 Swap Scratch，集成硬件 WDT，修正 MBOX 地址冲突 |
 | **1.3 原子回滚与串口应急刷机** | ✅ 完成 | 启用双镜像升级 (Sec + NS)，集成 MCUboot Serial Recovery (UART0) |
 | **1.4 弱网差分升级 (Delta OTA)** | ✅ 完成 | 集成 janpatch 差分库，新增 `ota delta_apply` 还原指令 |
-| **维度二：异构计算压榨与动态调度** | 🕒 待启动 | 准备标准化 IPC Service 通信 |
+| **2.1 IPC 通信标准化** | ✅ 完成 | 重构 TLV 协议，实现双端点 (Data/Ctrl) 通信，清理影子协议 |
+| **2.2 零拷贝与共享内存属性** | ✅ 完成 | 划定 64K WAVEFORM_SHM，启用 MPU Non-cacheable，实现跨核 Boot 逻辑 |
+| **2.3 M0 辅核固件热更新** | 🕒 待启动 | 准备对接 MCUboot 多镜像升级通道 |
 
 ---
 

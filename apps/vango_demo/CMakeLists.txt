@@ -32,6 +32,7 @@ target_sources(app PRIVATE
     src/services/power_monitor.c
     src/services/storage_init.c
     src/drivers/watchdog.c
+    src/drivers/boot_cpu1.c
 )
 
 # 3. Capability-based Service Inclusion

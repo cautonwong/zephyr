@@ -9,24 +9,8 @@
 LOG_MODULE_REGISTER(app_main, LOG_LEVEL_INF);
 
 #if defined(CONFIG_SOC_V32F20X_CPUAPP)
-static void boot_cpu1(void)
-{
-    LOG_INF("Setting CM0 (Metering) VTOR and releasing reset...");
-    /* V32F20X SYSCFG1 M0_IVT_BADDR (Secure Alias): set VTOR to CPUMETER partition */
-    *(volatile uint32_t *)0x31030064 = 0x081A0000;
-    
-    /* V32F20X SYSCFGLP CM0_CTRL (Secure Alias): bit 0 is Reset (1=Reset, 0=Run) */
-    *(volatile uint32_t *)0x50102050 = 0; /* 0x40102000 + 0x10000000 + 0x50 */
-}
-#endif
-
-#ifdef CONFIG_COREDUMP
-void crash_test(void)
-{
-    LOG_ERR("!!! Intentional Crash for Coredump Demo !!!");
-    volatile int *ptr = NULL;
-    *ptr = 0xDEADBEEF;
-}
+#include <zephyr/sys/reboot.h>
+extern void boot_cpu1(void);
 #endif
 
 extern int ipc_service_init(void);
@@ -42,7 +26,8 @@ extern void watchdog_feed(void);
 
 #if defined(CONFIG_SOC_V32F20X_CPUMETER)
 #include <protocol.h>
-extern int ipc_send_metering(struct metering_data *data);
+extern int ipc_send_metering(struct metering_payload *payload);
+extern int ipc_send_waveform_ptr(struct waveform_ptr_payload *payload);
 #endif
 
 int main(void)
@@ -72,17 +57,25 @@ int main(void)
 #endif
 
 #if defined(CONFIG_SOC_V32F20X_CPUMETER)
-    struct metering_data md = {0};
+    struct metering_payload mp = {0};
+    struct waveform_ptr_payload wp = {
+        .shm_address = WAVEFORM_SHM_BASE,
+        .sample_cnt = 512,
+        .channel_mask = 0x07
+    };
 #endif
 
         while (1) {
                 watchdog_feed();
         #if defined(CONFIG_SOC_V32F20X_CPUMETER)
-                /* Simulate production metering data pulse */
-                md.active_energy += 10;
-                md.reactive_energy += 5;
-                md.timestamp = k_uptime_get_32();
-                ipc_send_metering(&md);
+                /* 1. Periodic Standard Metering Data */
+                mp.active_energy += 10;
+                mp.reactive_energy += 5;
+                mp.timestamp = k_uptime_get_32();
+                ipc_send_metering(&mp);
+
+                /* 2. Zero-copy Waveform Event */
+                ipc_send_waveform_ptr(&wp);
         #endif
                 k_msleep(10000);
         }

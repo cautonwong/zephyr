@@ -1,3 +1,5 @@
+#include <zephyr/dt-bindings/memory-attr/memory-attr-arm.h>
+
 &rng0 { status = "okay"; };
 &gpioa { status = "okay"; };
 &gpiob { status = "okay"; };
@@ -21,6 +23,17 @@
         compatible = "vango,v32f20x-modbus", "zephyr,modbus-serial";
         status = "okay";
     };
+};
+
+/* Dimension 2.2: Zero-copy Shared Memory and MPU Isolation */
+&sram0 { reg = <0x20000000 DT_SIZE_K(1024)>; };
+
+&ipc_shm_0 {
+    zephyr,memory-attr = <( DT_MEM_ARM_MPU_RAM_NOCACHE )>;
+};
+
+&ipc_shm_1 {
+    zephyr,memory-attr = <( DT_MEM_ARM_MPU_RAM_NOCACHE )>;
 };
 
 &flash0 {
@@ -98,7 +111,7 @@
     };
 };
 
-&watchdog0 {
+&wdt0 {
     status = "okay";
 };
 
@@ -107,7 +120,16 @@
         app-uart = &uart14;
         app-modbus = &modbus0;
         app-modem = &modem0;
-        watchdog0 = &watchdog0;
+        watchdog0 = &wdt0;
+    };
+
+    /* Dedicated region for raw ADC waveform sharing */
+    waveform_shm: memory@20100000 {
+        compatible = "zephyr,memory-region", "mmio-sram";
+        reg = <0x20100000 DT_SIZE_K(64)>;
+        zephyr,memory-region = "WAVEFORM_SHM";
+        zephyr,memory-attr = <( DT_MEM_ARM_MPU_RAM_NOCACHE )>;
+        status = "okay";
     };
 
     chosen {
