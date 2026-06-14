@@ -54,5 +54,13 @@
     chosen {
         zephyr,code-partition = &boot_partition;
         zephyr,boot-partition = &boot_partition;
+        zephyr,console = &uart0;
+        zephyr,shell-uart = &uart0;
     };
 };
+
+&uart0 {
+    status = "okay";
+    current-speed = <115200>;
+};
+
