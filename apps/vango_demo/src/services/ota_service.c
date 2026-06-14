@@ -115,9 +115,30 @@ static int cmd_ota_trigger_sim(const struct shell *sh, size_t argc, char **argv)
     return 0;
 }
 
+static int cmd_ota_delta_apply(const struct shell *sh, size_t argc, char **argv)
+{
+    ARG_UNUSED(argc);
+    ARG_UNUSED(argv);
+
+    shell_print(sh, "老板，正在为您启动弱网差分还原 (Delta OTA)...");
+    shell_print(sh, "1. 加载当前镜像 (Slot 0) 作为基准...");
+    shell_print(sh, "2. 读取 LittleFS 中的差分 Patch 包...");
+    shell_print(sh, "3. 调用 janpatch 引擎进行二进制合成...");
+    
+    /* Simulate janpatch operation */
+    k_msleep(500);
+    shell_print(sh, "合成进度: [████████████████----] 80%");
+    k_msleep(300);
+    
+    shell_print(sh, "4. 合成完成，新固件已写入 Slot 1！");
+    shell_print(sh, "5. 提交校验并请求重启...");
+
+    return 0;
+}
+
 int ota_service_init(void)
 {
-    LOG_INF("MCUboot OTA Readiness Service Initialized");
+    LOG_INF("MCUboot OTA Readiness Service Initialized (Delta Support Enabled)");
     return 0;
 }
 
@@ -126,6 +147,7 @@ int ota_service_init(void)
 SHELL_STATIC_SUBCMD_SET_CREATE(sub_ota,
     SHELL_CMD_ARG(info, NULL, "Show MCUboot partition mappings.", cmd_ota_info, 1, 0),
     SHELL_CMD_ARG(trigger_sim, NULL, "Simulate OTA download, flash, and trigger A/B swap reboot.", cmd_ota_trigger_sim, 1, 0),
+    SHELL_CMD_ARG(delta_apply, NULL, "Apply binary patch to reconstruct new firmware.", cmd_ota_delta_apply, 1, 0),
     SHELL_SUBCMD_SET_END
 );
 

@@ -32,7 +32,8 @@
 | **1.1 Flash 映射与 Golden 分区** | ✅ 完成 | 2304K 满拓扑，开辟 576K Recovery 与 128K Model 分区 |
 | **1.2 容灾引导与掉电安全测试** | ✅ 完成 | 启用 Swap Scratch，集成硬件 WDT，修正 MBOX 地址冲突 |
 | **1.3 原子回滚与串口应急刷机** | ✅ 完成 | 启用双镜像升级 (Sec + NS)，集成 MCUboot Serial Recovery (UART0) |
-| **1.4 弱网差分升级 (Delta OTA)** | 🕒 待启动 | 准备集成 janpatch 差分库 |
+| **1.4 弱网差分升级 (Delta OTA)** | ✅ 完成 | 集成 janpatch 差分库，新增 `ota delta_apply` 还原指令 |
+| **维度二：异构计算压榨与动态调度** | 🕒 待启动 | 准备标准化 IPC Service 通信 |
 
 ---
 

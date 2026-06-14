@@ -1,0 +1,4 @@
+config JANPATCH
+    bool "Janpatch Delta OTA Engine"
+    help
+      Enable lightweight binary patching for Delta OTA updates.
