@@ -57,7 +57,7 @@ static void power_fail_worker(struct k_work *item)
      * Save the last-gasp metering data.
      */
     LOG_WRN("-> Saving last-gasp Metering Data to FlashDB...");
-    struct metering_data last_data = { .active_energy = 1234, .reactive_energy = 567 };
+    struct metering_payload last_data = { .active_energy = 1234, .reactive_energy = 567 };
     struct fdb_blob blob;
     fdb_kv_set_blob(&kvdb1, "last_meter", fdb_blob_make(&blob, &last_data, sizeof(last_data)));
 

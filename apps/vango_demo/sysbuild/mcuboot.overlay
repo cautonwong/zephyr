@@ -1,3 +1,41 @@
+#include <zephyr/dt-bindings/memory-attr/memory-attr-arm.h>
+
+&rng0 { status = "okay"; };
+&gpioa { status = "okay"; };
+&gpiob { status = "okay"; };
+
+&uart0 {
+    status = "okay";
+    current-speed = <115200>;
+    
+    modem0: modem0 {
+        compatible = "quectel,bg9x";
+        mdm-power-gpios = <&gpiob 8 GPIO_ACTIVE_HIGH>;
+        mdm-reset-gpios = <&gpiob 7 GPIO_ACTIVE_HIGH>;
+        status = "okay";
+    };
+};
+
+&uart14 { 
+    status = "okay"; 
+    current-speed = <115200>; 
+    modbus0: modbus0 {
+        compatible = "vango,v32f20x-modbus", "zephyr,modbus-serial";
+        status = "okay";
+    };
+};
+
+/* Dimension 2.2: Zero-copy Shared Memory and MPU Isolation */
+&sram0 { reg = <0x20000000 DT_SIZE_K(1024)>; };
+
+&ipc_shm_0 {
+    zephyr,memory-attr = <( DT_MEM_ARM_MPU_RAM_NOCACHE )>;
+};
+
+&ipc_shm_1 {
+    zephyr,memory-attr = <( DT_MEM_ARM_MPU_RAM_NOCACHE )>;
+};
+
 &flash0 {
     status = "okay";
     partitions {
@@ -5,32 +43,69 @@
         /delete-node/ partition@50000;
         /delete-node/ partition@a0000;
         /delete-node/ partition@b0000;
+        /delete-node/ partition@e0000;
         /delete-node/ partition@f0000;
+        /delete-node/ partition@130000;
+        /delete-node/ partition@134000;
+        /delete-node/ partition@13c000;
+        /delete-node/ partition@140000;
         /delete-node/ partition@150000;
         /delete-node/ partition@160000;
+        /delete-node/ partition@170000;
+        /delete-node/ partition@190000;
+        /delete-node/ partition@1b0000;
+        /delete-node/ partition@23f000;
 
         compatible = "fixed-partitions";
         #address-cells = <1>;
         #size-cells = <1>;
 
-        /* Aligned EXACTLY with TF-M flash_layout.h (2304KB Total) */
+        /* Phase 5: Dimension 3.1 TrustZone + 2304KB Topology */
         boot_partition: partition@0 {
             label = "mcuboot";
             reg = <0x00000000 DT_SIZE_K(64)>;
         };
+        
+        /* Slot 0: Split S/NS for TF-M Medium Profile */
         slot0_partition: partition@10000 {
             label = "image-0";
-            reg = <0x00010000 DT_SIZE_K(576)>;
+            reg = <0x00010000 DT_SIZE_K(256)>;
         };
+        slot0_ns_partition: partition@50000 {
+            label = "image-0-nonsecure";
+            reg = <0x00050000 DT_SIZE_K(320)>;
+        };
+
+        /* Slot 1: Split S/NS backup */
         slot1_partition: partition@A0000 {
             label = "image-1";
-            reg = <0x000A0000 DT_SIZE_K(576)>;
+            reg = <0x000A0000 DT_SIZE_K(256)>;
         };
-        /* 0x130000 - 0x140000 is reserved for TF-M PS (16K), ITS (32K), NV (16K) */
+        slot1_ns_partition: partition@E0000 {
+            label = "image-1-nonsecure";
+            reg = <0x000E0000 DT_SIZE_K(320)>;
+        };
+        
+        /* TF-M Security Regions */
+        tfm_ps_partition: partition@130000 {
+            label = "tfm-ps";
+            reg = <0x00130000 DT_SIZE_K(16)>;
+        };
+        tfm_its_partition: partition@134000 {
+            label = "tfm-its";
+            reg = <0x00134000 DT_SIZE_K(32)>;
+        };
+        tfm_nv_counters_partition: partition@13C000 {
+            label = "tfm-nv-counters";
+            reg = <0x0013C000 DT_SIZE_K(16)>; 
+        };
+
         scratch_partition: partition@140000 {
             label = "image-scratch";
             reg = <0x00140000 DT_SIZE_K(64)>;
         };
+
+        /* Custom & Application Partitions */
         cpumeter_partition: partition@150000 {
             label = "cpumeter";
             reg = <0x00150000 DT_SIZE_K(128)>;
@@ -45,17 +120,52 @@
         };
         recovery_partition: partition@1B0000 {
             label = "recovery";
-            reg = <0x001B0000 DT_SIZE_K(576)>;
+            reg = <0x001B0000 DT_SIZE_K(572)>;
+        };
+        otp_partition: partition@23f000 {
+            label = "tfm-otp";
+            reg = <0x0023F000 DT_SIZE_K(4)>;
         };
     };
 };
 
+&wdt0 {
+    status = "okay";
+};
+
 / {
+    aliases {
+        app-uart = &uart14;
+        app-modbus = &modbus0;
+        app-modem = &modem0;
+        watchdog0 = &wdt0;
+    };
+
+    /* Dedicated region for raw ADC waveform sharing */
+    waveform_shm: memory@20100000 {
+        compatible = "zephyr,memory-region", "mmio-sram";
+        reg = <0x20100000 DT_SIZE_K(64)>;
+        zephyr,memory-region = "WAVEFORM_SHM";
+        zephyr,memory-attr = <( DT_MEM_ARM_MPU_RAM_NOCACHE )>;
+        status = "okay";
+    };
+
     chosen {
-        zephyr,code-partition = &boot_partition;
+        zephyr,entropy = &rng0;
+        zephyr,code-partition = &slot0_ns_partition;
+        zephyr,ipc_shm = &ipc_shm_0;
         zephyr,boot-partition = &boot_partition;
         zephyr,console = &uart0;
         zephyr,shell-uart = &uart0;
+    };
+
+    ipc0: ipc0 {
+        compatible = "zephyr,ipc-icmsg";
+        tx-region = <&ipc_shm_1>;
+        rx-region = <&ipc_shm_0>;
+        mboxes = <&mbox 1>, <&mbox 0>;
+        mbox-names = "rx", "tx";
+        status = "okay";
     };
 };
 
@@ -63,4 +173,3 @@
     status = "okay";
     current-speed = <115200>;
 };
-

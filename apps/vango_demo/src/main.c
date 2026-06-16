@@ -21,6 +21,7 @@ extern int low_power_init(void);
 #ifdef CONFIG_APP_FEATURE_OTA
 extern int ota_service_init(void);
 #endif
+extern int security_service_init(void);
 extern int watchdog_init(void);
 extern void watchdog_feed(void);
 
@@ -54,6 +55,9 @@ int main(void)
 #endif
 #ifdef CONFIG_APP_FEATURE_OTA
     ota_service_init();
+#endif
+#ifdef CONFIG_APP_FEATURE_SECURITY
+    security_service_init();
 #endif
 
 #if defined(CONFIG_SOC_V32F20X_CPUMETER)
