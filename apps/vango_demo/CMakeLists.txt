@@ -51,3 +51,29 @@ target_include_directories(app PRIVATE
     /workspaces/applications/lib/flashdb/src/inc
     /workspaces/applications/lib/flashdb/port
 )
+
+# 5. WASM Sandbox WAMR Integration
+target_sources_ifdef(CONFIG_APP_FEATURE_WASM_SANDBOX app PRIVATE src/services/wasm_sandbox.c)
+
+if(CONFIG_APP_FEATURE_WASM_SANDBOX)
+    set(WAMR_ROOT_DIR "/workspaces/vendor/AkiraOS/modules/wasm-micro-runtime")
+    set(WAMR_BUILD_PLATFORM "zephyr")
+    set(WAMR_BUILD_TARGET "THUMB_V7")
+    set(WAMR_BUILD_INTERP 1)
+    set(WAMR_BUILD_MINI_LOADER 1)
+    set(WAMR_BUILD_AOT 0)
+    set(WAMR_BUILD_LIBC_BUILTIN 1)
+    set(WAMR_BUILD_LIBC_WASI 0)
+    set(WAMR_BUILD_GLOBAL_HEAP_POOL 1)
+    set(WAMR_BUILD_GLOBAL_HEAP_SIZE 65536)
+    set(WAMR_BUILD_REF_TYPES 0)
+    
+    include(${WAMR_ROOT_DIR}/build-scripts/runtime_lib.cmake)
+    target_sources(app PRIVATE ${WAMR_RUNTIME_LIB_SOURCE})
+    target_include_directories(app PRIVATE
+        ${WAMR_ROOT_DIR}/core/iwasm/include
+        ${WAMR_ROOT_DIR}/core/shared
+        ${WAMR_ROOT_DIR}/core/deps
+        src/services
+    )
+endif()

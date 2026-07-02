@@ -38,4 +38,10 @@ config APP_FEATURE_OTA
 	help
 	  Enable firmware download simulator and MCUboot upgrade request APIs.
 
+config APP_FEATURE_WASM_SANDBOX
+	bool "Enable Lightweight WASM Business Isolation Sandbox"
+	default n
+	help
+	  Enable WAMR runtime and a dedicated sandboxed execution environment.
+
 endmenu

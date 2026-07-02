@@ -1,0 +1,12 @@
+mach create "VangoV32"
+machine LoadPlatformDescription @tests/algo_dsp/renode/v32.repl
+
+# Enable UART logging to system log so we can see it in headless mode
+showAnalyzer uart0
+uart0 RecordToLog true
+
+sysbus LoadELF $bin
+
+cpu LogFunctionNames true
+
+echo "Renode: Vango V32 Model Loaded. Starting execution..."

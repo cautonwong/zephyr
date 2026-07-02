@@ -59,6 +59,10 @@ int main(void)
 #ifdef CONFIG_APP_FEATURE_SECURITY
     security_service_init();
 #endif
+#ifdef CONFIG_APP_FEATURE_WASM_SANDBOX
+    extern int wasm_sandbox_init(void);
+    wasm_sandbox_init();
+#endif
 
 #if defined(CONFIG_SOC_V32F20X_CPUMETER)
     struct metering_payload mp = {0};
