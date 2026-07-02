@@ -145,6 +145,24 @@ When adjusting partitions, ensure absolute alignment and avoid overlapping bound
 
 ---
 
+## Next Steps: tinyML & AI Implementation Roadmap
+
+Practice tinyML on the Vango M33 CPU by implementing **NILM (Non-Intrusive Load Monitoring)** for [ref_nilm_meter](file:///workspaces/applications/apps/ref_nilm_meter) and **Predictive Maintenance** for [ref_motor_pred_maint](file:///workspaces/applications/apps/ref_motor_pred_maint). 
+
+### Borrowed Design Patterns (from sdk-edge-ai)
+
+1. **Streaming Ping-Pong Buffers**: 
+   Orchestrate the producer-consumer data flow between the Cortex-M0 core (handling high-frequency ADC sampling) and the Cortex-M33 core (running tinyML inference) using standard Zephyr synchronization primitives (`struct k_sem` and `struct k_timer`). Use lockless shared memory in `WAVEFORM_SHM` to pass buffers.
+2. **Precomputed Look-Up Tables (LUT)**: 
+   Avoid expensive online operations (like transcendental functions, windowing, or quantization scaling) on the M33 CPU. Precompute these tables at boot time (e.g. `prefill_luts`) to keep online pre-processing at $O(1)$ complexity.
+3. **Preemptive Low-Priority Inference Thread**: 
+   Since model inference is CPU-heavy, run it inside a low-priority preemptible thread (`K_THREAD_DEFINE` with low priority) or system workqueue. High-priority communication loops (such as Modbus RTU client and PPP TCP/IP network tasks) must never be blocked by tinyML computations.
+4. **Static Arena Memory Allocation**: 
+   Avoid memory fragmentation on resource-constrained MCUs by pre-allocating a static Tensor Arena (e.g., `uint8_t tensor_arena[10240]`) inside `tinyml_service.c` instead of using dynamic `malloc`.
+
+---
+
 ## Compilation & Syncing (workflow.sh)
 - **RAM-Disk Syncing**: Always execute compilation through `./workflow.sh build <app> <profile>`. Raw `west build` ignores the RAM-disk sync (`/root/fast_space`) and custom `ZEPHYR_MODULES` paths, resulting in outdated or failed builds.
 - **Bypass Sandbox Requirement**: The compilation toolchain and RAM-disk live outside the workspace container boundary. You must run build commands with sandbox bypass enabled.
+
