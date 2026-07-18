@@ -1,0 +1,4 @@
+# Kconfig for ref_drone_fcc
+mainmenu "Drone Flight Control Computer"
+
+source "Kconfig.zephyr"

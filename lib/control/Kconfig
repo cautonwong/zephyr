@@ -1,0 +1,37 @@
+# Copyright (c) 2024 EdgeC
+# SPDX-License-Identifier: Apache-2.0
+
+config CONTROL
+	bool "Control algorithms library"
+	help
+	  Enable the control algorithms library providing PID, LESO (ADRC),
+	  and FFT-based spectrum analysis modules.
+
+if CONTROL
+
+config CONTROL_PID
+	bool "PID controller"
+	help
+	  Enable the PID (Proportional-Integral-Derivative) controller.
+	  Provides pid_init() and pid_update() with integral anti-windup
+	  clamping and output limiting.
+
+config CONTROL_LESO
+	bool "LESO observer"
+	help
+	  Enable the Linear Extended State Observer (LESO) for Active
+	  Disturbance Rejection Control (ADRC). Provides leso_init() and
+	  leso_update() based on a second-order state-space formulation.
+
+config CONTROL_SPECTRUM
+	bool "Spectrum analysis (CMSIS-DSP FFT)"
+	select CMSIS_DSP
+	select CMSIS_DSP_TRANSFORM
+	select CMSIS_DSP_COMPLEXMATH
+	select CMSIS_DSP_STATISTICS
+	help
+	  Enable FFT-based spectrum analysis using CMSIS-DSP. Provides
+	  spectrum_analyze() which computes the magnitude spectrum, finds
+	  the peak frequency, and calculates Total Harmonic Distortion (THD).
+
+endif # CONTROL

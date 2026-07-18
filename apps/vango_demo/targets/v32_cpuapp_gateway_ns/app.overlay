@@ -173,3 +173,30 @@
     status = "okay";
     current-speed = <115200>;
 };
+
+&pinctrl {
+    axon_default: axon_default {
+        group1 {
+            pinmux = <VANGO_PINMUX(VANGO_PORT_A, 4, 0)>;
+            bias-pull-up;
+        };
+    };
+    axon_sleep: axon_sleep {
+        group1 {
+            pinmux = <VANGO_PINMUX(VANGO_PORT_A, 4, 0)>;
+            bias-pull-down;
+        };
+    };
+};
+
+/ {
+    sim_axon: sim_axon@4002c000 {
+        compatible = "vango,sim-axon";
+        reg = <0x4002c000 0x1000>;
+        pinctrl-0 = <&axon_default>;
+        pinctrl-1 = <&axon_sleep>;
+        pinctrl-names = "default", "sleep";
+        status = "okay";
+    };
+};
+

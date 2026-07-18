@@ -1,0 +1,4 @@
+# Kconfig for ref_motor_pred_maint
+mainmenu "Industrial Motor Vibration and Current Diagnostics"
+
+source "Kconfig.zephyr"

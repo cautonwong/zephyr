@@ -1,0 +1,11 @@
+description: Vango Technologies Simulated Axon Accelerator for tinyML PM Verification
+compatible: "vango,sim-axon"
+include: [base.yaml, pinctrl-device.yaml]
+
+properties:
+  reg:
+    type: array
+    required: true
+  status:
+    type: string
+    required: true

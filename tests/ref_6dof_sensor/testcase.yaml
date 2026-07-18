@@ -1,0 +1,9 @@
+tests:
+  ref_6dof_sensor.build:
+    tags: ref-6dof-sensor build
+    platform_allow:
+      - native_sim
+    build_only: true
+    integration_platforms:
+      - native_sim
+

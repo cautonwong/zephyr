@@ -1,0 +1,4 @@
+# Kconfig for ref_v2g_charger
+mainmenu "Vehicle to Grid EV Charging Controller"
+
+source "Kconfig.zephyr"

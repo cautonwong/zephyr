@@ -1,0 +1,4 @@
+# Kconfig for ref_medical_wearable
+mainmenu "Medical Wearable Vital Signs Processing"
+
+source "Kconfig.zephyr"

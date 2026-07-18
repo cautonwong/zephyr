@@ -1,0 +1,9 @@
+tests:
+  ref_nir_spectrometer.build:
+    tags: ref-nir-spectrometer build
+    platform_allow:
+      - native_sim
+    build_only: true
+    integration_platforms:
+      - native_sim
+

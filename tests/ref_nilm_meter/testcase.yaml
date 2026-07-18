@@ -1,0 +1,18 @@
+tests:
+  nilm_meter.build:
+    tags: nilm cnn power
+    platform_allow:
+      - native_sim
+    build_only: true
+    integration_platforms:
+      - native_sim
+
+  nilm_meter.console:
+    tags: nilm cnn power
+    platform_allow:
+      - native_sim
+    harness: console
+    harness_config:
+      type: one_line
+      regex:
+        - "NILM Classification Summary"

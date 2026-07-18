@@ -1,0 +1,18 @@
+tests:
+  vango.ota.janpatch:
+    tags: ota janpatch
+    harness: ztest
+    platform_allow:
+      - native_sim
+    integration_platforms:
+      - native_sim
+
+  vango.dual_core.build:
+    tags: vango dual renode
+    build_only: true
+    platform_allow:
+      - native_sim
+    extra_args:
+      - CONFIG_APP_FEATURE_OTA=n
+    extra_configs:
+      - CONFIG_JANPATCH=n

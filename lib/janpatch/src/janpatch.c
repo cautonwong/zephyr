@@ -3,15 +3,9 @@
  * Phase 5 Dimension 1.4: Delta OTA Support
  */
 
-#include <stdio.h>
 #include <stdint.h>
 #include <string.h>
-
-typedef struct {
-    int (*read)(void* buffer, uint32_t size, void* stream);
-    int (*write)(const void* buffer, uint32_t size, void* stream);
-    int (*seek)(long offset, int origin, void* stream);
-} janpatch_ctx_t;
+#include <janpatch.h>
 
 int janpatch(janpatch_ctx_t ctx, void* source, void* patch, void* target) {
     uint8_t buffer[128];

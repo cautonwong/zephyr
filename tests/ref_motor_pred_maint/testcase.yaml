@@ -1,0 +1,26 @@
+tests:
+  motor_pred_maint.build:
+    tags: motor control dsp
+    platform_allow:
+      - native_sim
+    build_only: true
+    integration_platforms:
+      - native_sim
+    extra_configs:
+      - CONFIG_CONTROL=y
+      - CONFIG_CONTROL_SPECTRUM=y
+
+  motor_pred_maint.console:
+    tags: motor control dsp
+    platform_allow:
+      - native_sim
+    harness: console
+    harness_config:
+      type: one_line
+      regex:
+        - "ref_motor_pred_maint initialization complete"
+    integration_platforms:
+      - native_sim
+    extra_configs:
+      - CONFIG_CONTROL=y
+      - CONFIG_CONTROL_SPECTRUM=y

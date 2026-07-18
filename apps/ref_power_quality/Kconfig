@@ -1,0 +1,4 @@
+# Kconfig for ref_power_quality
+mainmenu "Smart Grid Power Quality Monitoring (THD & Sag/Swell)"
+
+source "Kconfig.zephyr"

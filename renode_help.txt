@@ -1,0 +1,2 @@
+16:01:39.0159 [INFO] Loaded monitor commands from: /opt/renode/scripts/monitor.py
+16:01:39.0627 [INFO] Monitor available in telnet mode on port 1234

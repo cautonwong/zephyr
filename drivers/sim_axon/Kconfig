@@ -1,0 +1,8 @@
+# Kconfig for Simulated Axon driver
+
+menuconfig SIM_AXON
+	bool "Simulated Axon Accelerator Driver"
+	default n
+	depends on PM_DEVICE
+	help
+	  Enable the simulated Axon accelerator driver for PM Runtime verification.

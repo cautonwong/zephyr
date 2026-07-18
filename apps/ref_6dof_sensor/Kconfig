@@ -1,0 +1,4 @@
+# Kconfig for ref_6dof_sensor
+mainmenu "6DoF IMU Sensor Fusion Kalman Filter"
+
+source "Kconfig.zephyr"

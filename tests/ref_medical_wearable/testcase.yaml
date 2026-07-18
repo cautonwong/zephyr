@@ -1,0 +1,9 @@
+tests:
+  ref_medical_wearable.build:
+    tags: ref-medical-wearable build
+    platform_allow:
+      - native_sim
+    build_only: true
+    integration_platforms:
+      - native_sim
+

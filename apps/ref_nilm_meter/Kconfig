@@ -1,0 +1,4 @@
+# Kconfig for ref_nilm_meter
+mainmenu "Smart Meter Non-Intrusive Load Monitoring"
+
+source "Kconfig.zephyr"

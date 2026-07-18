@@ -1,0 +1,4 @@
+# Kconfig for ref_bms_eis
+mainmenu "BMS Battery Impedance Spectroscopy"
+
+source "Kconfig.zephyr"

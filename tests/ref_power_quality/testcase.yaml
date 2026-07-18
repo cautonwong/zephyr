@@ -1,0 +1,9 @@
+tests:
+  ref_power_quality.build:
+    tags: ref-power-quality build
+    platform_allow:
+      - native_sim
+    build_only: true
+    integration_platforms:
+      - native_sim
+

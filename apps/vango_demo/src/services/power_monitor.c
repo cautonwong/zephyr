@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#if defined(CONFIG_APP_FEATURE_LOW_POWER)
+
 #include <zephyr/kernel.h>
 #include <zephyr/device.h>
 #include <zephyr/logging/log.h>
@@ -102,4 +104,6 @@ int power_monitor_init(void)
 #endif
     return 0;
 }
+
+#endif /* CONFIG_APP_FEATURE_LOW_POWER */
 

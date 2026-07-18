@@ -6,6 +6,9 @@
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/sys/ring_buffer.h>
+
+#if defined(CONFIG_APP_FEATURE_WASM_SANDBOX)
+
 #include <wasm_export.h>
 #include <stdlib.h>
 #include <string.h>
@@ -218,3 +221,5 @@ int wasm_sandbox_init(void)
     k_thread_name_set(&wasm_thread, "wasm_sandbox");
     return 0;
 }
+
+#endif /* CONFIG_APP_FEATURE_WASM_SANDBOX */

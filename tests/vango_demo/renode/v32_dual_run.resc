@@ -1,0 +1,29 @@
+mach create "VangoV32Dual"
+machine LoadPlatformDescription @tests/vango_demo/renode/v32_dual.repl
+
+# Enable UART logging
+showAnalyzer uart0
+uart0 RecordToLog true
+uart1 RecordToLog true
+
+# Paths to built ELF files
+$cpumeter_elf?=@build/vango_demo/v32_cpumeter_metering/zephyr/zephyr.elf
+$cpuapp_elf?=@build/vango_demo/v32_cpuapp_gateway_ns/zephyr/zephyr.elf
+
+# Load M0 firmware (cpumeter)
+sysbus.cpu0 LoadELF $cpumeter_elf
+echo "cpumeter (M0) ELF loaded"
+
+# Load M33 firmware (cpuapp)
+sysbus.cpu1 LoadELF $cpuapp_elf
+echo "cpuapp (M33) ELF loaded"
+
+# Enable function tracing for both cores
+cpu0 LogFunctionNames false
+cpu1 LogFunctionNames true
+
+echo "Renode: Vango V32 Dual-Core model loaded. Starting execution..."
+
+# Start both cores
+cpu1 IsStarted true
+cpu0 IsStarted true

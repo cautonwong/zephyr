@@ -1,0 +1,4 @@
+# Kconfig for ref_nir_spectrometer
+mainmenu "Portable Near-Infrared Spectrometer Processing"
+
+source "Kconfig.zephyr"

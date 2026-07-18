@@ -1,0 +1,4 @@
+# Kconfig for ref_radar_ranging
+mainmenu "Industrial 24GHz mmWave Radar & Ultrasonic Ranging"
+
+source "Kconfig.zephyr"

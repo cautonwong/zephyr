@@ -1,0 +1,9 @@
+tests:
+  ref_v2g_charger.build:
+    tags: ref-v2g-charger build
+    platform_allow:
+      - native_sim
+    build_only: true
+    integration_platforms:
+      - native_sim
+

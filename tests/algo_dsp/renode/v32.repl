@@ -11,4 +11,8 @@ sram0: Memory.MappedMemory @ sysbus 0x20000000
 flash0: Memory.MappedMemory @ sysbus 0x08000000
     size: 0x00240000
 
-uart0: UART.NS16550 @ sysbus 0x4000C000
+uart0: UART.NS16550 @ sysbus 0x40010000
+    -> nvic@60
+
+uart1: UART.NS16550 @ sysbus 0x40010800
+    -> nvic@61

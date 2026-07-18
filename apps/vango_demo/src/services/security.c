@@ -6,6 +6,8 @@
 #include <zephyr/kernel.h>
 #include <zephyr/shell/shell.h>
 #include <zephyr/logging/log.h>
+
+#if defined(CONFIG_APP_FEATURE_SECURITY)
 #include <psa/initial_attestation.h>
 #include <psa/crypto.h>
 
@@ -60,3 +62,5 @@ SHELL_STATIC_SUBCMD_SET_CREATE(sub_security,
 );
 
 SHELL_CMD_REGISTER(security, &sub_security, "PSA Security commands", NULL);
+
+#endif /* CONFIG_APP_FEATURE_SECURITY */

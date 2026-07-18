@@ -1,0 +1,47 @@
+/* Vango V32 Dual-Core Platform: Cortex-M0 (cpumeter) + Cortex-M33 (cpuapp) */
+
+nvic: IRQControllers.NVIC @ sysbus 0xE000E000
+    systickFrequency: 64000000
+
+/* Secondary NVIC for M0 */
+nvic_cm0: IRQControllers.NVIC @ sysbus 0xE000E000
+    /* M0 uses the same NVIC base but different interrupt lines */
+
+/* Core 0: Cortex-M0 (cpumeter - metering co-processor) */
+cpu0: CPU.CortexM @ sysbus 0x00000000
+    cpuType: "cortex-m0"
+    nvic: nvic_cm0
+
+/* Core 1: Cortex-M33 (cpuapp - application processor) */
+cpu1: CPU.CortexM @ sysbus 0x08000000
+    cpuType: "cortex-m33"
+    nvic: nvic
+
+/* SRAM: 1104 KB total (0x20000000 - 0x20114000) */
+sram: Memory.MappedMemory @ sysbus 0x20000000
+    size: 0x00114000
+
+/* Flash: 2304 KB (0x08000000 - 0x08240000) */
+flash: Memory.MappedMemory @ sysbus 0x08000000
+    size: 0x00240000
+
+/* Shared Memory for IPC (WAVEFORM_SHM): 64 KB */
+shm: Memory.MappedMemory @ sysbus 0x20100000
+    size: 0x00010000
+
+/* UART0: M33 console */
+uart0: UART.NS16550 @ sysbus 0x40010000
+    -> nvic@60
+
+/* UART1: M0 debug (optional) */
+uart1: UART.NS16550 @ sysbus 0x40010800
+    -> nvic@61
+
+/* MBOX: Use MultiTimer as simple inter-core interrupt generator */
+mbox: Misc.MultiTimer @ sysbus 0x40020000
+    -> nvic@50  /* MBOX interrupt line */
+
+/* Virtual ADC: Emulated ADC for waveform injection */
+adc_emul: Emulation.GPIO @ sysbus 0x40021000
+    /* Placeholder: in Renode, ADC is typically modeled via
+     * custom peripherals. Using GPIO for test triggering. */

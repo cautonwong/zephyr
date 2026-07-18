@@ -1,12 +1,15 @@
+logFile @/workspaces/applications/renode_internal.log
 mach create "VangoV32"
-machine LoadPlatformDescription @tests/algo_dsp/renode/v32.repl
+machine LoadPlatformDescription @/workspaces/applications/tests/algo_dsp/renode/v32.repl
 
-# Enable UART logging to system log so we can see it in headless mode
-showAnalyzer uart0
-uart0 RecordToLog true
+# Enable UART logging to file so we can see it in headless mode
+sysbus.uart1 CreateFileBackend @/workspaces/applications/renode_output.log true
 
-sysbus LoadELF $bin
+sysbus LoadHex @/workspaces/applications/build/vango_demo/renode_v32/vango_demo/zephyr/tfm_merged.hex
+sysbus LoadSymbolsFrom @/workspaces/applications/build/vango_demo/renode_v32/vango_demo/zephyr/zephyr.elf
 
-cpu LogFunctionNames true
+sysbus.cpu PC 0x080008C3
+sysbus.cpu SP 0x20005580
 
 echo "Renode: Vango V32 Model Loaded. Starting execution..."
+start

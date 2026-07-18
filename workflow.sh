@@ -144,8 +144,19 @@ case $COMMAND in
         if [ "$COMMAND" == "renode" ]; then
             RESC_FILE="${WORKSPACE_ROOT}/applications/tests/${APP_NAME}/renode/v32_run.resc"
             echo "--> [RENODE] Starting Headless Simulation (Real-time Logs)..."
-            /opt/renode/renode --disable-xwt -e "s \$bin = @${BUILD_DIR}/zephyr/zephyr.elf; i @${RESC_FILE}; start; sleep 2; quit" > "${WORKSPACE_ROOT}/applications/renode_output.log" 2>&1 || true
-            cat "${WORKSPACE_ROOT}/applications/renode_output.log" | grep -E "VangoV32|cpu|uart0|Booting|PASS|FAIL" | head -n 50
+            # Start Renode in background
+            /opt/renode/renode --disable-xwt "$RESC_FILE" > "${WORKSPACE_ROOT}/applications/renode_output.log" 2>&1 &
+            RENODE_PID=$!
+            # Wait for 5 seconds in real time
+            sleep 5
+            # Kill the Renode process safely
+            kill $RENODE_PID >/dev/null 2>&1 || true
+            sleep 0.5
+            kill -9 $RENODE_PID >/dev/null 2>&1 || true
+            echo "--> [RENODE] Output Log:"
+            cat "${WORKSPACE_ROOT}/applications/renode_output.log" || true
+            echo "--> [RENODE] Internal System Log:"
+            cat "${WORKSPACE_ROOT}/applications/renode_internal.log" || true
         fi
         ;;
         
@@ -175,7 +186,45 @@ case $COMMAND in
         echo "--> [CLEAN] Removing build directories for $APP_NAME"
         rm -rf "${WORKSPACE_ROOT}/applications/build/${APP_NAME}"
         ;;
-        
+
+    test)
+        echo "--> [TEST] Building all reference designs on native_sim..."
+        REF_APPS=$(ls -d "${WORKSPACE_ROOT}/applications/apps/ref_"* 2>/dev/null | xargs -n1 basename)
+        FAILED=0
+        PASSED=0
+        for app in $REF_APPS; do
+            echo ""
+            echo "=============================================="
+            echo " Building $app for native_sim..."
+            echo "=============================================="
+            BUILD_DIR="${WORKSPACE_ROOT}/applications/build/${app}/native_sim"
+            APP_PATH="${FAST_SPACE}/applications/apps/${app}"
+            CMSIS_DSP_MODULE="${FAST_SPACE}/rtos/zephyr/modules/lib/cmsis-dsp"
+            CMSIS_6_MODULE="${FAST_SPACE}/rtos/zephyr/modules/hal/cmsis_6"
+            APP_MODULE="${FAST_SPACE}/applications"
+            export ZEPHYR_MODULES="${CMSIS_DSP_MODULE};${CMSIS_6_MODULE};${APP_MODULE}"
+
+            mkdir -p "$BUILD_DIR"
+            if cmake -GNinja -B"$BUILD_DIR" -S"$APP_PATH" \
+                -DBOARD="native_sim" \
+                -DZEPHYR_MODULES="$ZEPHYR_MODULES" \
+                -DZEPHYR_BASE="$ZEPHYR_BASE" \
+                -DZEPHYR_CCACHE=ON 2>&1 | tail -5 && \
+                ninja -C "$BUILD_DIR" -j $CPUS 2>&1 | tail -5; then
+                echo "  ✓ $app BUILD PASSED"
+                PASSED=$((PASSED + 1))
+            else
+                echo "  ✗ $app BUILD FAILED"
+                FAILED=$((FAILED + 1))
+            fi
+        done
+        echo ""
+        echo "=============================================="
+        echo " Build Results: $PASSED passed, $FAILED failed"
+        echo "=============================================="
+        [ $FAILED -eq 0 ] || exit 1
+        ;;
+
     *)
         usage
         ;;

@@ -11,3 +11,17 @@ tests:
       type: one_line
       regex:
         - "Hello, V32F20X!"
+
+  vango_v32f20x_demo.ota:
+    tags:
+      - vango
+      - ota
+      - shell
+    harness: pytest
+    harness_config:
+      pytest_root: pytest
+    platform_allow:
+      - native_sim
+    extra_configs:
+      - CONFIG_APP_FEATURE_OTA=y
+      - CONFIG_JANPATCH=y

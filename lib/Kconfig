@@ -4,6 +4,7 @@
 menu "Custom libraries"
 
 rsource "custom/Kconfig"
+rsource "control/Kconfig"
 rsource "flashdb/Kconfig"
 
 endmenu
